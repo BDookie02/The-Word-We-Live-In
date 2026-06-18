@@ -68,7 +68,9 @@ input layer (tap / drag-pan / pinch-zoom) that emits intents. Keep the sim core 
 - Save data is versioned JSON with explicit migrations.
 
 ## Git / remote
-- Local repo: branch `main`, initial commit `b5e4f0c` (40 files). Identity set locally to
-  jojos / co.nosiah@gmail.com (change with `git config user.name/user.email` if desired).
-- Remote: **NOT configured.** To push, create a GitHub repo and grant access, then:
-  `git remote add origin <url> && git push -u origin main`. See RESUME_PROMPT.md.
+- Local repo: branch `main`. Identity set locally to jojos / co.nosiah@gmail.com
+  (change with `git config user.name/user.email` if desired).
+- Remote: ✅ **configured & pushed.** `origin` =
+  https://github.com/BDookie02/The-Word-We-Live-In.git (note: repo name reads "Word" not
+  "World" — rename on GitHub if unintended, then `git remote set-url origin <new>`).
+- Push at each checkpoint with `git push`.

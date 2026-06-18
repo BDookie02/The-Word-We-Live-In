@@ -50,8 +50,9 @@ CURRENT POSITION (update this each checkpoint):
   add a touch/gesture input layer (tap / drag-pan / pinch-zoom) that emits intents. Do NOT
   modify the sim core's public contract; UI/render only read snapshots and dispatch intents.
 
-GIT REMOTE STATUS: local repo only; no remote configured. If the user wants pushes, ask them to
-create a GitHub repo and provide access, then add it as `origin` and push `main`.
+GIT REMOTE STATUS: origin configured + main pushed ->
+https://github.com/BDookie02/The-Word-We-Live-In.git (Git Credential Manager handles auth).
+Run `git push` after committing each checkpoint.
 ```
 
 ---
