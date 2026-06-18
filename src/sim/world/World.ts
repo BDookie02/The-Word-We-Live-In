@@ -10,6 +10,16 @@ import { biomeForHeight } from '../planet/biomes';
 import { generateTerrain, sampleHeight, type TerrainData } from '../planet/Terrain';
 import { stepMovement } from '../systems/movement';
 import { clamp01to100, stepSurvival } from '../systems/survival';
+import {
+  emptyStats,
+  objectiveProgress,
+  OBJECTIVES,
+  type AssistantMessage,
+  type ObjectiveContext,
+  type ObjectiveProgress,
+  type PlayerStats,
+} from '../objectives/objectives';
+import type { ItemId } from '../items/items';
 
 /** Player view in a snapshot: full state plus a derived `nearWater` flag for the UI. */
 export type PlayerSnapshot = PlayerState & { nearWater: boolean };
@@ -28,7 +38,11 @@ export interface WorldSnapshot {
   player: PlayerSnapshot;
   nodes: ResourceNode[];
   inventory: Inventory;
+  objectives: ObjectiveProgress[];
+  messages: AssistantMessage[];
 }
+
+const MAX_MESSAGES = 8;
 
 /** Resource kinds that can spawn in each biome (by biome index from `biomeForHeight`). */
 const BIOME_RESOURCES: Record<number, ResourceKind[]> = {
@@ -52,12 +66,20 @@ export class World {
   player: PlayerState;
   nodes: ResourceNode[];
   inventory: Inventory;
+  stats: PlayerStats;
+  /** Set of completed objective ids (latched). */
+  private completed: Record<string, boolean> = {};
+  private messages: AssistantMessage[] = [];
+  private nextMsgId = 1;
+  private warnedHunger = false;
+  private warnedThirst = false;
 
   constructor(seed: number) {
     this.seed = seed >>> 0;
     this.rng = createRng(this.seed);
     this.clock = new SimClock();
     this.inventory = {};
+    this.stats = emptyStats();
     this.terrain = generateTerrain(this.seed);
     this.player = {
       id: 'player',
@@ -67,6 +89,10 @@ export class World {
       status: 'alive',
     };
     this.nodes = this.generateNodes();
+
+    // The AI assistant's opening guidance (scripted, no LLM).
+    this.pushMessage('ARIA: Systems online. We crash-landed on an unknown world.');
+    this.pushMessage('ARIA: Tap the ground to move, tap resources to gather. Start with wood.');
   }
 
   static fromSeed(seed: number): World {
@@ -131,6 +157,7 @@ export class World {
         const tool = TOOL_FOR_RESOURCE[node.kind];
         const yieldQty = tool && invCount(this.inventory, tool) > 0 ? 2 : 1;
         invAdd(this.inventory, node.kind, yieldQty);
+        this.stats.gathered += yieldQty;
         if (node.amount <= 0) {
           this.nodes = this.nodes.filter((n) => n.id !== node.id);
         }
@@ -149,6 +176,7 @@ export class World {
         if (recipe.requiresTool && invCount(this.inventory, recipe.requiresTool) < 1) return false;
         if (!invConsume(this.inventory, recipe.inputs)) return false;
         invAdd(this.inventory, recipe.output.item, recipe.output.qty);
+        this.stats.crafted += 1;
         return true;
       }
 
@@ -162,12 +190,14 @@ export class World {
         if (!alive || invCount(this.inventory, 'food') < 1) return false;
         invConsume(this.inventory, { food: 1 });
         this.player.needs.hunger = clamp01to100(this.player.needs.hunger + SURVIVAL.eatRestore);
+        this.stats.eaten += 1;
         return true;
       }
 
       case 'drink': {
         if (!alive || !this.isNearWater()) return false;
         this.player.needs.thirst = clamp01to100(this.player.needs.thirst + SURVIVAL.drinkRestore);
+        this.stats.drank += 1;
         return true;
       }
 
@@ -192,6 +222,52 @@ export class World {
     }
   }
 
+  private objectiveContext(): ObjectiveContext {
+    return { inventory: this.inventory, stats: this.stats };
+  }
+
+  private pushMessage(text: string): void {
+    this.messages.push({ id: this.nextMsgId++, tick: this.clock.tick, text });
+    if (this.messages.length > MAX_MESSAGES) this.messages.shift();
+  }
+
+  /** Complete any newly-satisfied objectives, grant rewards, and announce them. */
+  private evaluateObjectives(): void {
+    const ctx = this.objectiveContext();
+    for (const o of OBJECTIVES) {
+      if (this.completed[o.id]) continue;
+      if (o.measure(ctx) < o.target) continue;
+      this.completed[o.id] = true;
+      let rewardText = '';
+      if (o.reward) {
+        for (const [id, qty] of Object.entries(o.reward) as [ItemId, number][]) {
+          invAdd(this.inventory, id, qty);
+        }
+        rewardText = ` (+${Object.entries(o.reward)
+          .map(([id, qty]) => `${qty} ${id}`)
+          .join(', ')})`;
+      }
+      this.pushMessage(`ARIA: Objective complete — ${o.title}${rewardText}.`);
+    }
+  }
+
+  /** One-shot survival warnings from the assistant, re-armed once the need recovers. */
+  private checkNeedWarnings(): void {
+    const { hunger, thirst } = this.player.needs;
+    if (hunger < 25 && !this.warnedHunger) {
+      this.warnedHunger = true;
+      this.pushMessage('ARIA: You are getting hungry — eat something soon.');
+    } else if (hunger > 50) {
+      this.warnedHunger = false;
+    }
+    if (thirst < 25 && !this.warnedThirst) {
+      this.warnedThirst = true;
+      this.pushMessage('ARIA: Hydration low — find water and drink.');
+    } else if (thirst > 50) {
+      this.warnedThirst = false;
+    }
+  }
+
   /** Advance exactly one fixed simulation step. */
   tick(): void {
     if (this.player.status === 'alive') {
@@ -200,8 +276,11 @@ export class World {
       if (collapsed) {
         this.player.status = 'collapsed';
         this.player.target = null;
+        this.pushMessage('ARIA: Vitals critical — you collapsed.');
       }
+      this.checkNeedWarnings();
     }
+    this.evaluateObjectives();
     this.clock.step();
   }
 
@@ -222,6 +301,8 @@ export class World {
       },
       nodes: this.nodes.map((n) => ({ ...n, pos: { ...n.pos } })),
       inventory: { ...this.inventory },
+      objectives: objectiveProgress(this.objectiveContext(), this.completed),
+      messages: this.messages.map((m) => ({ ...m })),
     };
   }
 }

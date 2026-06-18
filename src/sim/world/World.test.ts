@@ -158,3 +158,31 @@ describe('World crafting & tools', () => {
     expect(invCount(w.inventory, 'wood')).toBe(before + 2);
   });
 });
+
+describe('World objectives & assistant', () => {
+  it('starts with scripted assistant messages and incomplete objectives', () => {
+    const snap = World.fromSeed(5).snapshot();
+    expect(snap.messages.length).toBeGreaterThan(0);
+    expect(snap.objectives.every((o) => !o.completed)).toBe(true);
+  });
+
+  it('completes an objective on tick, grants its reward, and announces it', () => {
+    const w = World.fromSeed(5);
+    w.dispatch({ type: 'grantCache', kind: 'wood', amount: 5 });
+    w.tick(); // evaluation runs each tick
+    const snap = w.snapshot();
+    const wood = snap.objectives.find((o) => o.id === 'gather_wood_5')!;
+    expect(wood.completed).toBe(true);
+    expect(invCount(w.inventory, 'food')).toBe(2); // reward granted once
+    expect(snap.messages.some((m) => m.text.includes('Gather 5 wood'))).toBe(true);
+  });
+
+  it('does not re-grant a completed objective reward', () => {
+    const w = World.fromSeed(5);
+    w.dispatch({ type: 'grantCache', kind: 'wood', amount: 5 });
+    w.tick();
+    w.tick();
+    w.tick();
+    expect(invCount(w.inventory, 'food')).toBe(2); // still just one reward
+  });
+});

@@ -29,6 +29,12 @@ export {
 } from './items/inventory';
 export { RECIPES, recipeById, type Recipe } from './items/recipes';
 export {
+  OBJECTIVES,
+  type AssistantMessage,
+  type ObjectiveProgress,
+  type PlayerStats,
+} from './objectives/objectives';
+export {
   RESOURCE_KINDS,
   emptyTally,
   fullNeeds,

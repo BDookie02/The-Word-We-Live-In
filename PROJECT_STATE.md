@@ -2,9 +2,9 @@
 
 > Living status document. Updated at every checkpoint. Read this first when resuming.
 
-**Last updated:** 2026-06-18 (Checkpoint C5 — Phase 5 complete & verified)
-**Current phase:** Phase 5 done ✅ → next: Phase 6 (AI assistant dialogue/objective system)
-**Overall status:** 🟢 Healthy. No drift. Build/test/lint green; app boots clean (preview screenshot tool timed out this round — verified via console + tests).
+**Last updated:** 2026-06-18 (Checkpoint C6 — Phase 6 complete & verified)
+**Current phase:** Phase 6 done ✅ → next: Phase 7 (NPC survivors: needs, relationships, tasks)
+**Overall status:** 🟢 Healthy. No drift. Build/test/lint green; app boots clean (preview screenshot tool still timing out — verified via console + 66 tests).
 
 ---
 
@@ -47,12 +47,16 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
   sim core; data-driven recipes (plank, rope, sharp_stone → axe/pickaxe/spear); `craft` intent
   consumes inputs and yields outputs; matching tools double gather yield (axe→wood, pickaxe→
   stone). HUD shows the inventory; a crafting panel lists recipes with affordability.
+- **AI assistant + objectives:** ~13 small auto-tracked objectives (gather/craft/eat/drink
+  milestones) that complete against world state each tick, grant one-time rewards, and are
+  announced by the scripted "ARIA" assistant. HUD has an assistant banner (latest message) and
+  a Tasks panel (progress bars). Assistant also gives intro guidance + low-need warnings.
 - **Mobile camera/input:** touch-friendly camera rig (drag-pan + pinch-zoom via drei
   MapControls); tap a resource node to gather, tap ground to move.
 - HUD overlay (clock, needs, inventory, actions, crafting panel) adapts to portrait/landscape.
 - **Monetization** verified at runtime earlier: "Watch ad" → MockAdService → +10 wood;
   revive flow uses the `reward_revive` placement.
-- `npm run test` (58 passing), `npm run build` (tsc + vite; ~999 KB JS / 278 KB gz — three.js
+- `npm run test` (66 passing), `npm run build` (tsc + vite; ~1.0 MB JS / 280 KB gz — three.js
   is heavy, code-splitting deferred to Phase 15), `npm run lint` (clean) — all green.
 
 ## Built so far
@@ -64,8 +68,9 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 | 3 Procedural planet prototype | ✅ done | Seeded value-noise/fBm heightmap + biomes (sim core); faceted low-poly terrain mesh + water; biome-based node placement on the surface. Build/test/lint green + runtime-verified. |
 | 4 Player movement + survival loop | ✅ done | Tap-to-move (terrain-follow); pure needs system (health/hunger/thirst/energy) + eat/drink; collapse + ad-revive; HUD needs bars. Build/test/lint green + runtime-verified. |
 | 5 Inventory, tools, gathering, crafting | ✅ done | Item model + inventory; data-driven recipes; craft intent; tool-doubled gather; HUD inventory + crafting panel. Build/test/lint green; app boots clean. |
-| 6 AI assistant dialogue/objectives | ⬜ next | See ROADMAP.md |
-| 7–16 | ⬜ not started | See ROADMAP.md |
+| 6 AI assistant dialogue/objectives | ✅ done | Auto-tracked objective system + rewards; scripted ARIA message feed (intro/warnings/completions); HUD assistant banner + Tasks panel. Build/test/lint green; app boots clean. |
+| 7 NPC survivors: needs, relationships, tasks | ⬜ next | See ROADMAP.md |
+| 8–16 | ⬜ not started | See ROADMAP.md |
 
 ## What is stubbed (and honestly NOT finished)
 - AdService: real AdMob impl deferred; **MockAdService** used in dev/web.
@@ -77,16 +82,17 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 - None yet. (Android build blocked until JDK 17 installed — not needed before Phase 16.)
 
 ## Next exact task
-Phase 6 — AI assistant dialogue/objective system: add an objective/quest model in the sim core
-(small, numerous, easily-completable tasks like "gather 5 wood", "craft an axe", "drink water"),
-auto-tracked against world state each tick, with completion + rewards. Add the AI assistant as a
-contextual message feed (scripted lines triggered by events/objectives — no LLM needed). Surface
-current objectives + assistant messages in the HUD. Keep objective definitions + progress logic
-pure + tested in the sim core.
+Phase 7 — NPC survivors: needs, relationships, tasks. Add NPC agents in the sim core: each with
+needs (reuse NeedLevels), a position with movement, a simple utility-AI behaviour loop (seek
+food/water/idle), and a daily schedule. Add a relationship graph (player↔NPC, NPC↔NPC affinity)
+that shifts from proximity/interactions. Allow recruiting/assigning a simple task (e.g. "gather
+wood here"). Render NPCs in the scene; surface a roster in the HUD. Keep all NPC logic pure +
+unit-tested in the sim core (deterministic).
 
-Known tunables to revisit: day length ~3 min real/day (TICKS_PER_HOUR=150). Survival decay rates
-in `SURVIVAL` are first-pass. Terrain is a single mesh (chunking/LOD = Phase 13). Bundle
-code-splitting = Phase 15. Preview screenshot tool was flaky at C5 (app verified via console+tests).
+Known tunables to revisit: day length ~3 min real/day (TICKS_PER_HOUR=150). Survival/craft
+balance first-pass. Terrain is a single mesh (chunking/LOD = Phase 13). Bundle code-splitting =
+Phase 15. NOTE: the preview **screenshot** tool has been timing out since C5 (environment, not
+the app) — verify via `preview_console_logs` + tests until it recovers.
 
 ## Current architecture assumptions
 - Sim core is deterministic and renderer-agnostic; UI never mutates world directly — it

@@ -4,6 +4,34 @@ Append-only checkpoint log. Newest at top. Each entry = a verifiable save point.
 
 ---
 
+## C6 — Phase 6 complete & verified — 2026-06-18
+**Phase:** 6 (AI assistant dialogue/objective system) — ✅ done
+**What was built:**
+- Sim core `src/sim/objectives/objectives.ts`: `OBJECTIVES` (13 small auto-tracked tasks —
+  gather/craft/eat/drink milestones), `PlayerStats` lifetime counters, `ObjectiveContext`,
+  `objectiveProgress()` (serializable progress), and `AssistantMessage`. Pure + unit-tested.
+- `World`: tracks `stats` (incremented on gather/craft/eat/drink), a latched `completed` map,
+  and an assistant `messages` feed. Each tick evaluates objectives (grants one-time rewards +
+  announces), checks one-shot low-need warnings, and announces collapse. Constructor pushes
+  scripted intro lines ("ARIA"). Snapshot now carries `objectives` + `messages`.
+- UI: assistant banner (latest message, animated) + `ObjectivesPanel` (Tasks button, progress
+  bars, done count). HUD gained the Tasks toggle.
+
+**Files changed:** +src/sim/objectives/objectives.ts (+ test), ~src/sim/world/World.ts (+ tests),
+~src/sim/index.ts, +src/ui/ObjectivesPanel.tsx, ~src/ui/Hud.tsx, ~src/index.css.
+**What works:** objectives auto-complete from world state with rewards + assistant messages;
+intro/warning lines; Tasks panel + assistant banner; all prior systems intact.
+**What is stubbed (honest):** no NPCs yet (Phase 7); assistant is scripted/rule-based (no LLM, by
+design); AdMob seam + seed-only save still pending; balance first-pass.
+**What failed:** one build error (Array.at needs ES2022 lib) — fixed by indexing instead.
+**Validation run:** `npm run test` → 66/66 pass · `npm run build` → tsc + vite OK (1.0 MB / 280 KB
+gz; chunk-size warning noted) · `npm run lint` → clean · **runtime:** app boots clean (React +
+AdService init, no console errors). NOTE: the preview **screenshot** tool has been timing out
+since C5 (environment issue, not the app); verified via console + tests instead.
+**Next exact task:** Phase 7 — NPC survivors (needs, utility-AI behaviour, schedules), a
+relationship graph, recruit/assign-task, NPC rendering + roster UI; all NPC logic pure + tested.
+**Git:** committed on `main`, pushed to origin.
+
 ## C5 — Phase 5 complete & verified — 2026-06-18
 **Phase:** 5 (inventory, tools, gathering, crafting) — ✅ done
 **What was built:**
