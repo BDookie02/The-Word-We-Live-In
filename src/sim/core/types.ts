@@ -25,7 +25,25 @@ export interface ResourceNode {
   amount: number;
 }
 
+/** Survival needs, each on a 0..100 scale (100 = fully satisfied). */
+export interface NeedLevels {
+  hunger: number;
+  thirst: number;
+  energy: number;
+  health: number;
+}
+
+export function fullNeeds(): NeedLevels {
+  return { hunger: 100, thirst: 100, energy: 100, health: 100 };
+}
+
+export type PlayerStatus = 'alive' | 'collapsed';
+
 export interface PlayerState {
   id: EntityId;
   pos: Vec2;
+  /** Current move destination in world (x, z), or null when idle. */
+  target: Vec2 | null;
+  needs: NeedLevels;
+  status: PlayerStatus;
 }

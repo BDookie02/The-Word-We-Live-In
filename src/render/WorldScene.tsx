@@ -1,3 +1,4 @@
+import type { ThreeEvent } from '@react-three/fiber';
 import { useGameStore } from '../state/store';
 import { sampleHeight } from '../sim';
 import { computeLighting, dayFractionFromTime } from './dayNight';
@@ -7,8 +8,8 @@ import TerrainMesh from './TerrainMesh';
 /**
  * The low-poly 3D world. Reads the latest sim snapshot and the static terrain from the store
  * and draws the terrain, water, player, and resource nodes. Sim coordinates (x, y) map to
- * world (X, Z); terrain height provides Y. Lighting/sky are derived from the in-world clock.
- * No world mutation happens here beyond dispatching a `gather` intent on tap.
+ * world (X, Z); terrain height provides Y. Tapping the ground sets a move target; tapping a
+ * node gathers it. No world mutation happens here beyond dispatching those intents.
  */
 export default function WorldScene() {
   const snapshot = useGameStore((s) => s.snapshot);
@@ -16,8 +17,14 @@ export default function WorldScene() {
   const dispatch = useGameStore((s) => s.dispatch);
   if (!snapshot || !terrain) return null;
 
+  const { player } = snapshot;
   const light = computeLighting(dayFractionFromTime(snapshot.time.hour, snapshot.time.minute));
-  const playerY = sampleHeight(terrain, snapshot.player.pos.x, snapshot.player.pos.y);
+  const playerY = sampleHeight(terrain, player.pos.x, player.pos.y);
+
+  const handleGroundTap = (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation();
+    dispatch({ type: 'moveTo', x: e.point.x, y: e.point.z });
+  };
 
   return (
     <>
@@ -28,18 +35,34 @@ export default function WorldScene() {
       <hemisphereLight intensity={0.35} color={light.skyColor} groundColor="#2b1f14" />
       <directionalLight position={light.sunPosition} intensity={light.sunIntensity} color="#fff4e0" />
 
-      <TerrainMesh data={terrain} />
+      {/* Tapping terrain or water sets a move target. */}
+      <group onClick={handleGroundTap}>
+        <TerrainMesh data={terrain} />
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, terrain.waterLevel, 0]}>
+          <planeGeometry args={[terrain.worldSize, terrain.worldSize]} />
+          <meshStandardMaterial color="#2f6fb0" transparent opacity={0.8} flatShading />
+        </mesh>
+      </group>
 
-      {/* Water plane at sea level. */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, terrain.waterLevel, 0]}>
-        <planeGeometry args={[terrain.worldSize, terrain.worldSize]} />
-        <meshStandardMaterial color="#2f6fb0" transparent opacity={0.8} flatShading />
-      </mesh>
+      {/* Move-target marker. */}
+      {player.target && (
+        <mesh
+          position={[
+            player.target.x,
+            sampleHeight(terrain, player.target.x, player.target.y) + 0.15,
+            player.target.y,
+          ]}
+          rotation={[-Math.PI / 2, 0, 0]}
+        >
+          <ringGeometry args={[0.6, 0.9, 16]} />
+          <meshBasicMaterial color="#ffe08a" transparent opacity={0.85} />
+        </mesh>
+      )}
 
-      {/* Player marker, seated on the terrain. */}
-      <mesh position={[snapshot.player.pos.x, playerY + 0.9, snapshot.player.pos.y]}>
+      {/* Player marker, seated on the terrain (greys out on collapse). */}
+      <mesh position={[player.pos.x, playerY + 0.9, player.pos.y]}>
         <capsuleGeometry args={[0.4, 0.8, 4, 8]} />
-        <meshStandardMaterial color="#4fc3f7" flatShading />
+        <meshStandardMaterial color={player.status === 'collapsed' ? '#8a8f98' : '#4fc3f7'} flatShading />
       </mesh>
 
       {snapshot.nodes.map((node) => (

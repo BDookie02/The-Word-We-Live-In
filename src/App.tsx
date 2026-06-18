@@ -5,6 +5,7 @@ import { SaveService } from './services/save/SaveService';
 import { useGameStore } from './state/store';
 import { hashStringToSeed } from './sim';
 import Hud from './ui/Hud';
+import CollapseOverlay from './ui/CollapseOverlay';
 import WorldCanvas from './render/WorldCanvas';
 
 /**
@@ -39,6 +40,7 @@ export default function App() {
         <>
           <WorldCanvas />
           <Hud />
+          <CollapseOverlay />
         </>
       ) : (
         <div className="boot">Generating world…</div>

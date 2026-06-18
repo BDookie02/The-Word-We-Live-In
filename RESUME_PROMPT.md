@@ -44,12 +44,13 @@ WORKING RULES (checkpoint protocol):
   push unless a remote is configured — ask the user for GitHub access if needed).
 
 CURRENT POSITION (update this each checkpoint):
-- Last checkpoint: C3 — Phase 3 complete & verified (build/test/lint green; runtime-verified:
-  procedural low-poly terrain with biomes + water, nodes seated on the surface).
-- Next exact task: Phase 4 (player movement + survival resource loop) — add tap-to-move player
-  movement with terrain-follow height, plus survival needs (hunger/thirst/energy) as a pure,
-  unit-tested per-tick system in the sim core that decays and is relieved by consuming gathered
-  resources; surface needs in the HUD. Keep all rules in src/sim; UI/render read snapshots and
+- Last checkpoint: C4 — Phase 4 complete & verified (build/test/lint green; runtime-verified:
+  needs bars, contextual eat/drink, tap-to-move). 50 tests passing.
+- Next exact task: Phase 5 (inventory, tools, gathering, crafting) — add an item model +
+  inventory in the sim core (extending/replacing the flat `gathered` tally), data-driven
+  crafting recipes, a `craft` intent that consumes inputs and yields tools/items, and
+  tool-gated or faster gathering. Surface inventory + a crafting panel in the HUD. Keep item/
+  recipe data + crafting rules pure and unit-tested in src/sim; UI/render read snapshots and
   dispatch intents only.
 
 GIT REMOTE STATUS: origin configured + main pushed ->

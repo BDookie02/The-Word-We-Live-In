@@ -8,7 +8,8 @@ export const TICK_RATE_HZ = 20; // fixed sim steps per real second at 1x speed
 export const TICK_MS = 1000 / TICK_RATE_HZ;
 
 // In-world calendar: how many sim ticks map to one in-world hour/day.
-export const TICKS_PER_HOUR = 50;
+// 150 ticks/hour @20Hz => 7.5s per in-world hour => 3 min per in-world day.
+export const TICKS_PER_HOUR = 150;
 export const HOURS_PER_DAY = 24;
 export const TICKS_PER_DAY = TICKS_PER_HOUR * HOURS_PER_DAY;
 
@@ -22,6 +23,27 @@ export const ADS = {
   interstitialCooldownSec: 120,
   /** Resource bonus granted by the rewarded "supply cache" placement. */
   rewardCacheAmount: 10,
+} as const;
+
+// Player movement + survival (Phase 4). Decay/regen are per fixed tick.
+export const SURVIVAL = {
+  moveSpeed: 10, // world units per second
+  arriveRadius: 0.4, // stop when within this distance of the move target
+
+  hungerDecayPerTick: 0.02,
+  thirstDecayPerTick: 0.03,
+  energyMoveCostPerTick: 0.05,
+  energyIdleRegenPerTick: 0.03,
+
+  // Health drains while any need is empty, and slowly recovers while well-fed/hydrated.
+  healthDecayPerTick: 0.06,
+  healthRegenPerTick: 0.012,
+  healthRegenNeedThreshold: 50,
+
+  eatRestore: 35, // hunger restored per food eaten
+  drinkRestore: 40, // thirst restored per drink
+  drinkMaxHeightAboveWater: 1.8, // player counts as "at the shore" within this height band
+  reviveLevel: 60, // needs/health restored to this on revive
 } as const;
 
 // Procedural terrain (Phase 3). gridSize cells per side -> (gridSize+1)^2 vertices.

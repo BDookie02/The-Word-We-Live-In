@@ -64,3 +64,57 @@ describe('World', () => {
     expect(w.snapshot().tick).toBe(100);
   });
 });
+
+describe('World survival & movement', () => {
+  it('moveTo sets a target and ticks move the player toward it', () => {
+    const w = World.fromSeed(5);
+    w.dispatch({ type: 'moveTo', x: 20, y: 0 });
+    expect(w.player.target).toEqual({ x: 20, y: 0 });
+    for (let i = 0; i < 20; i++) w.tick();
+    expect(w.player.pos.x).toBeGreaterThan(0);
+  });
+
+  it('eat consumes one food and restores hunger', () => {
+    const w = World.fromSeed(5);
+    w.dispatch({ type: 'grantCache', kind: 'food', amount: 3 });
+    w.player.needs.hunger = 40;
+    const ok = w.dispatch({ type: 'eat' });
+    expect(ok).toBe(true);
+    expect(w.gathered.food).toBe(2);
+    expect(w.player.needs.hunger).toBeGreaterThan(40);
+  });
+
+  it('eat fails with no food', () => {
+    const w = World.fromSeed(5);
+    expect(w.dispatch({ type: 'eat' })).toBe(false);
+  });
+
+  it('drink restores thirst at the shoreline', () => {
+    const w = World.fromSeed(5);
+    // Move the player onto the lowest terrain vertex (guaranteed at/near water level).
+    const { heights, size, worldSize } = w.terrain;
+    const verts = size + 1;
+    let minIdx = 0;
+    for (let k = 1; k < heights.length; k++) if (heights[k] < heights[minIdx]) minIdx = k;
+    const half = worldSize / 2;
+    const cell = worldSize / size;
+    w.player.pos = { x: -half + (minIdx % verts) * cell, y: -half + Math.floor(minIdx / verts) * cell };
+    w.player.needs.thirst = 30;
+    const ok = w.dispatch({ type: 'drink' });
+    expect(ok).toBe(true);
+    expect(w.player.needs.thirst).toBeGreaterThan(30);
+  });
+
+  it('collapses when health hits 0 and blocks actions until revived', () => {
+    const w = World.fromSeed(5);
+    w.player.needs = { hunger: 0, thirst: 0, energy: 0, health: 0.01 };
+    w.tick();
+    expect(w.player.status).toBe('collapsed');
+    expect(w.dispatch({ type: 'moveTo', x: 5, y: 5 })).toBe(false);
+
+    const revived = w.dispatch({ type: 'revive' });
+    expect(revived).toBe(true);
+    expect(w.player.status).toBe('alive');
+    expect(w.player.needs.health).toBeGreaterThan(0);
+  });
+});

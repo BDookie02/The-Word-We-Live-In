@@ -101,20 +101,122 @@ body {
   color: var(--accent-2);
 }
 
-.hud__ad-btn {
+/* ---- survival needs ---- */
+.hud__needs {
+  pointer-events: none;
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 3rem);
+  left: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  width: min(42vw, 190px);
+}
+
+.need {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.need__icon {
+  font-size: 0.85rem;
+  width: 1.2rem;
+  text-align: center;
+}
+
+.need__track {
+  flex: 1;
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.need__fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.2s linear;
+}
+
+/* ---- actions ---- */
+.hud__actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.hud__btn {
   pointer-events: auto;
   border: 1px solid var(--accent);
   background: rgba(79, 195, 247, 0.15);
   color: var(--text);
   font: inherit;
   font-size: 0.85rem;
-  padding: 0.55rem 0.9rem;
+  padding: 0.5rem 0.8rem;
   border-radius: 999px;
   min-height: 44px; /* mobile-friendly touch target */
   cursor: pointer;
 }
 
-.hud__ad-btn:disabled {
+.hud__btn--ad {
+  border-color: var(--accent-2);
+  background: rgba(123, 216, 143, 0.15);
+}
+
+.hud__btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* ---- collapse / revive overlay ---- */
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(6, 10, 18, 0.72);
+  backdrop-filter: blur(2px);
+  z-index: 10;
+}
+
+.overlay__card {
+  max-width: 320px;
+  margin: 1rem;
+  padding: 1.4rem;
+  text-align: center;
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+}
+
+.overlay__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.3rem;
+}
+
+.overlay__body {
+  margin: 0 0 1.1rem;
+  font-size: 0.9rem;
+  opacity: 0.85;
+  line-height: 1.4;
+}
+
+.overlay__btn {
+  border: 1px solid var(--accent-2);
+  background: rgba(123, 216, 143, 0.18);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.95rem;
+  padding: 0.7rem 1.1rem;
+  border-radius: 999px;
+  min-height: 48px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.overlay__btn:disabled {
   opacity: 0.5;
   cursor: default;
 }
@@ -123,5 +225,8 @@ body {
 @media (orientation: landscape) {
   .hud__bar {
     padding-top: calc(env(safe-area-inset-top, 0px) + 0.4rem);
+  }
+  .hud__needs {
+    top: calc(env(safe-area-inset-top, 0px) + 2.6rem);
   }
 }

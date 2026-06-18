@@ -1,14 +1,46 @@
 import { useGameStore } from '../state/store';
 import { useRewardedAd } from './useRewardedAd';
 import { ADS } from '../config/gameConfig';
-import { RESOURCE_KINDS } from '../sim';
+import { RESOURCE_KINDS, type NeedLevels } from '../sim';
 
-/** Heads-up overlay: world clock, gathered resources, and the opt-in rewarded-ad action. */
+const NEED_META: { key: keyof NeedLevels; label: string; icon: string }[] = [
+  { key: 'health', label: 'Health', icon: '❤️' },
+  { key: 'hunger', label: 'Hunger', icon: '🍖' },
+  { key: 'thirst', label: 'Thirst', icon: '💧' },
+  { key: 'energy', label: 'Energy', icon: '⚡' },
+];
+
+function barColor(value: number): string {
+  if (value > 60) return '#7bd88f';
+  if (value > 30) return '#e6c14b';
+  return '#e0584f';
+}
+
+function NeedBar({ icon, label, value }: { icon: string; label: string; value: number }) {
+  return (
+    <div className="need" title={`${label}: ${Math.round(value)}`}>
+      <span className="need__icon" aria-hidden>
+        {icon}
+      </span>
+      <span className="need__track">
+        <span
+          className="need__fill"
+          style={{ width: `${Math.max(0, Math.min(100, value))}%`, background: barColor(value) }}
+        />
+      </span>
+    </div>
+  );
+}
+
+/** Heads-up overlay: world clock, survival needs, resource tallies, and actions. */
 export default function Hud() {
   const snapshot = useGameStore((s) => s.snapshot);
+  const dispatch = useGameStore((s) => s.dispatch);
   const { watchForReward, adBusy } = useRewardedAd();
   if (!snapshot) return null;
 
+  const { player } = snapshot;
+  const alive = player.status === 'alive';
   const { day, hour, minute } = snapshot.time;
   const clock = `Day ${day} · ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
 
@@ -21,6 +53,12 @@ export default function Hud() {
         </span>
       </header>
 
+      <div className="hud__needs">
+        {NEED_META.map(({ key, label, icon }) => (
+          <NeedBar key={key} icon={icon} label={label} value={player.needs[key]} />
+        ))}
+      </div>
+
       <footer className="hud__bar hud__bar--bottom">
         <div className="hud__resources">
           {RESOURCE_KINDS.map((kind) => (
@@ -29,19 +67,37 @@ export default function Hud() {
             </span>
           ))}
         </div>
-        <button
-          className="hud__ad-btn"
-          disabled={adBusy}
-          onClick={() =>
-            watchForReward('reward_cache', {
-              type: 'grantCache',
-              kind: 'wood',
-              amount: ADS.rewardCacheAmount,
-            })
-          }
-        >
-          {adBusy ? 'Loading ad…' : `🎁 Watch ad: +${ADS.rewardCacheAmount} wood`}
-        </button>
+
+        <div className="hud__actions">
+          <button
+            className="hud__btn"
+            disabled={!alive || snapshot.gathered.food < 1}
+            onClick={() => dispatch({ type: 'eat' })}
+          >
+            🍖 Eat
+          </button>
+          <button
+            className="hud__btn"
+            disabled={!alive || !player.nearWater}
+            onClick={() => dispatch({ type: 'drink' })}
+            title={player.nearWater ? 'Drink from the water' : 'Move to the shore to drink'}
+          >
+            💧 Drink
+          </button>
+          <button
+            className="hud__btn hud__btn--ad"
+            disabled={adBusy || !alive}
+            onClick={() =>
+              watchForReward('reward_cache', {
+                type: 'grantCache',
+                kind: 'wood',
+                amount: ADS.rewardCacheAmount,
+              })
+            }
+          >
+            {adBusy ? 'Loading…' : `🎁 +${ADS.rewardCacheAmount} wood`}
+          </button>
+        </div>
       </footer>
     </div>
   );

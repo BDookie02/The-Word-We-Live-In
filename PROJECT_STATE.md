@@ -2,8 +2,8 @@
 
 > Living status document. Updated at every checkpoint. Read this first when resuming.
 
-**Last updated:** 2026-06-18 (Checkpoint C3 — Phase 3 complete & verified)
-**Current phase:** Phase 3 done ✅ → next: Phase 4 (player movement + survival resource loop)
+**Last updated:** 2026-06-18 (Checkpoint C4 — Phase 4 complete & verified)
+**Current phase:** Phase 4 done ✅ → next: Phase 5 (inventory, tools, gathering, crafting)
 **Overall status:** 🟢 Healthy. No drift. Build/test/lint green; runtime-verified in a browser preview.
 
 ---
@@ -38,11 +38,17 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 - **Procedural generation lives in the sim core** (`src/sim/planet`): deterministic value
   noise + fBm → heightmap + biomes; resource nodes are scattered onto land and chosen by
   biome, seated on the surface via bilinear height sampling. Same seed → identical planet.
+- **Player movement + survival loop:** tap the ground to move (terrain-follow, with a target
+  marker); survival needs (health/hunger/thirst/energy) decay per tick in the sim core; eat
+  food to relieve hunger, drink at the shoreline to relieve thirst; energy drains while moving
+  and recovers while idle; health drains when a need is empty → **collapse**, which offers a
+  rewarded-ad **revive**. Needs bars + Eat/Drink actions in the HUD.
 - **Mobile camera/input:** touch-friendly camera rig (drag-pan + pinch-zoom via drei
-  MapControls); tap a resource node to gather.
-- HUD overlay (clock, resource tallies, ad button) adapts to portrait/landscape.
-- **Monetization** verified at runtime earlier: "Watch ad" → MockAdService → +10 wood.
-- `npm run test` (34 passing), `npm run build` (tsc + vite; ~992 KB JS / 276 KB gz — three.js
+  MapControls); tap a resource node to gather, tap ground to move.
+- HUD overlay (clock, needs, resource tallies, actions) adapts to portrait/landscape.
+- **Monetization** verified at runtime earlier: "Watch ad" → MockAdService → +10 wood;
+  revive flow uses the `reward_revive` placement.
+- `npm run test` (50 passing), `npm run build` (tsc + vite; ~996 KB JS / 278 KB gz — three.js
   is heavy, code-splitting deferred to Phase 15), `npm run lint` (clean) — all green.
 
 ## Built so far
@@ -52,8 +58,9 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 | 1 Runnable skeleton | ✅ done | Vite+React+TS tooling; pure sim core (RNG/clock/World/intents); GameLoop; Zustand bridge; AdService abstraction; HUD. Verified green. |
 | 2 Mobile input/camera/orientation | ✅ done | react-three-fiber 3D scene; pure day/night lighting model; drei MapControls camera (pan/pinch); tap-to-gather; responsive HUD. Build/test/lint green + runtime-verified. |
 | 3 Procedural planet prototype | ✅ done | Seeded value-noise/fBm heightmap + biomes (sim core); faceted low-poly terrain mesh + water; biome-based node placement on the surface. Build/test/lint green + runtime-verified. |
-| 4 Player movement + survival loop | ⬜ next | See ROADMAP.md |
-| 5–16 | ⬜ not started | See ROADMAP.md |
+| 4 Player movement + survival loop | ✅ done | Tap-to-move (terrain-follow); pure needs system (health/hunger/thirst/energy) + eat/drink; collapse + ad-revive; HUD needs bars. Build/test/lint green + runtime-verified. |
+| 5 Inventory, tools, gathering, crafting | ⬜ next | See ROADMAP.md |
+| 6–16 | ⬜ not started | See ROADMAP.md |
 
 ## What is stubbed (and honestly NOT finished)
 - AdService: real AdMob impl deferred; **MockAdService** used in dev/web.
@@ -65,15 +72,14 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 - None yet. (Android build blocked until JDK 17 installed — not needed before Phase 16.)
 
 ## Next exact task
-Phase 4 — player movement + survival resource loop: add a movable player (tap-to-move toward a
-point / target on the terrain, with terrain-follow height), and survival needs
-(hunger/thirst/energy) as a per-tick system in the sim core that decays over time and is
-relieved by consuming gathered food/water. Surface needs in the HUD. Add a fail/low-state.
-Keep needs logic pure + tested in the sim core.
+Phase 5 — inventory, tools, gathering, crafting: introduce an item model + inventory in the sim
+core (replacing/extending the flat `gathered` tally), data-driven crafting recipes, a craft
+intent that consumes inputs and produces tools/items, and tool-gated/faster gathering. Surface
+inventory + a crafting panel in the HUD. Keep item/recipe data + crafting rules pure + tested.
 
-Known tunables to revisit: in-world day length is ~60s real per day (TICKS_PER_HOUR=50 @20Hz) —
-likely lengthen for real survival pacing in Phase 4. Terrain is a single mesh; true chunking/LOD
-comes with the planet-scale zoom in Phase 13. Bundle code-splitting deferred to Phase 15.
+Known tunables to revisit: day length now ~3 min real/day (TICKS_PER_HOUR=150). Survival decay
+rates in `SURVIVAL` are first-pass — balance later. Terrain is a single mesh (chunking/LOD =
+Phase 13). Bundle code-splitting = Phase 15.
 
 ## Current architecture assumptions
 - Sim core is deterministic and renderer-agnostic; UI never mutates world directly — it

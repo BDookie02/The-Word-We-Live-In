@@ -9,6 +9,14 @@ export type Intent =
   | { type: 'noop' }
   | { type: 'gather'; nodeId: EntityId }
   /** Grant a resource bonus — used by the rewarded-ad "supply cache" reward flow. */
-  | { type: 'grantCache'; kind: ResourceKind; amount: number };
+  | { type: 'grantCache'; kind: ResourceKind; amount: number }
+  /** Set the player's move destination (world x, z). */
+  | { type: 'moveTo'; x: number; y: number }
+  /** Consume one food to relieve hunger. */
+  | { type: 'eat' }
+  /** Drink to relieve thirst (only succeeds at the shoreline). */
+  | { type: 'drink' }
+  /** Recover from a collapse — used by the rewarded-ad "revive" reward flow. */
+  | { type: 'revive' };
 
 export type IntentType = Intent['type'];

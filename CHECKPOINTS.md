@@ -4,6 +4,40 @@ Append-only checkpoint log. Newest at top. Each entry = a verifiable save point.
 
 ---
 
+## C4 — Phase 4 complete & verified — 2026-06-18
+**Phase:** 4 (player movement + survival resource loop) — ✅ done
+**What was built:**
+- Config: `SURVIVAL` tunables (move speed, decay/regen rates, eat/drink restore, revive level);
+  lengthened the in-world day to ~3 min (TICKS_PER_HOUR 50→150).
+- Types: `NeedLevels` + `fullNeeds()`; `PlayerState` gains `target`, `needs`, `status`.
+- Intents: `moveTo`, `eat`, `drink`, `revive`.
+- Pure systems: `systems/movement.ts` (`stepMovement` toward target) and `systems/survival.ts`
+  (`stepSurvival` decay/regen + collapse) — both unit-tested.
+- `World`: runs movement + survival each tick (while alive); handles new intents (eat consumes
+  food + relieves hunger; drink relieves thirst only at the shoreline via terrain sampling;
+  revive restores from collapse); snapshot now carries needs/status/target + derived `nearWater`.
+- Render: tapping terrain/water dispatches `moveTo` (with a target ring marker); player capsule
+  greys out on collapse.
+- UI: HUD needs bars (health/hunger/thirst/energy) + Eat/Drink actions (contextually disabled);
+  `CollapseOverlay` with opt-in rewarded-ad revive (`reward_revive`).
+
+**Files changed:** ~src/config/gameConfig.ts, ~src/sim/core/types.ts, ~src/sim/intents/intents.ts,
++src/sim/systems/{movement,survival}.ts (+ tests), ~src/sim/world/World.ts (+ test additions),
+~src/sim/index.ts, ~src/render/WorldScene.tsx, ~src/ui/Hud.tsx, +src/ui/CollapseOverlay.tsx,
+~src/App.tsx, ~src/index.css.
+**What works:** tap-to-move (terrain-follow); needs decay + eat/drink; collapse→ad-revive
+(unit-tested); HUD needs bars; contextual action enabling.
+**What is stubbed (honest):** inventory is still the flat `gathered` tally (real items/tools/
+crafting = Phase 5); no tools yet; NPCs/settlement/eras unbuilt; AdMob seam + seed-only save
+still pending. Survival balance is first-pass.
+**What failed:** nothing.
+**Validation run:** `npm run test` → 50/50 pass · `npm run build` → tsc + vite OK (996 KB / 278 KB
+gz; chunk-size warning noted) · `npm run lint` → clean · **runtime:** browser preview showed needs
+bars, contextually-disabled Eat/Drink, and the player moving toward a tapped point; no console errors.
+**Next exact task:** Phase 5 — item model + inventory, data-driven crafting recipes, craft intent,
+tool-gated/faster gathering, crafting UI.
+**Git:** committed on `main`, pushed to origin.
+
 ## C3 — Phase 3 complete & verified — 2026-06-18
 **Phase:** 3 (procedural low-poly planet prototype) — ✅ done
 **What was built:**
