@@ -44,10 +44,11 @@ WORKING RULES (checkpoint protocol):
   push unless a remote is configured — ask the user for GitHub access if needed).
 
 CURRENT POSITION (update this each checkpoint):
-- Last checkpoint: C0 — planning docs done; Phase 1 skeleton in progress.
-- Next exact task: finish Phase 1 (scaffold + deterministic sim core + state bridge +
-  AdService abstraction + minimal HUD); get build/test/lint green; git init + commit;
-  then Phase 2 (mobile input, camera, portrait/landscape).
+- Last checkpoint: C1 — Phase 1 complete & verified (build/test/lint green; commit b5e4f0c).
+- Next exact task: Phase 2 (mobile input, camera, portrait/landscape) — add react-three-fiber
+  + drei, replace the placeholder SVG WorldView with a low-poly r3f scene + camera rig, and
+  add a touch/gesture input layer (tap / drag-pan / pinch-zoom) that emits intents. Do NOT
+  modify the sim core's public contract; UI/render only read snapshots and dispatch intents.
 
 GIT REMOTE STATUS: local repo only; no remote configured. If the user wants pushes, ask them to
 create a GitHub repo and provide access, then add it as `origin` and push `main`.
