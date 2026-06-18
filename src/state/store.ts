@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Intent, WorldSnapshot } from '../sim';
+import type { Intent, TerrainData, WorldSnapshot } from '../sim';
 
 /**
  * Bridge between the deterministic sim core and React. The GameLoop writes the latest
@@ -9,23 +9,28 @@ import type { Intent, WorldSnapshot } from '../sim';
  */
 interface GameStore {
   snapshot: WorldSnapshot | null;
+  /** Static terrain for the current world. Set once at startup, not per tick. */
+  terrain: TerrainData | null;
   dispatch: (intent: Intent) => void;
   /** True while a rewarded ad is in flight (drives UI busy state). */
   adBusy: boolean;
 
   setSnapshot: (snapshot: WorldSnapshot) => void;
+  setTerrain: (terrain: TerrainData) => void;
   setDispatch: (dispatch: (intent: Intent) => void) => void;
   setAdBusy: (busy: boolean) => void;
 }
 
 export const useGameStore = create<GameStore>((set) => ({
   snapshot: null,
+  terrain: null,
   dispatch: () => {
     /* replaced by GameLoop.start() */
   },
   adBusy: false,
 
   setSnapshot: (snapshot) => set({ snapshot }),
+  setTerrain: (terrain) => set({ terrain }),
   setDispatch: (dispatch) => set({ dispatch }),
   setAdBusy: (adBusy) => set({ adBusy }),
 }));

@@ -12,7 +12,7 @@ Phased build plan. Each phase is small enough to verify before moving on. Status
 | 0 | Inspect workspace, choose stack | Done in C0 | ✅ |
 | 1 | Runnable project skeleton | Vite+React+TS, deterministic sim core, state bridge, ad-service abstraction, HUD | ✅ |
 | 2 | Mobile input, camera, portrait/landscape | r3f 3D scene, day/night, drei MapControls (pan/pinch), tap-to-gather, responsive HUD | ✅ |
-| 3 | Procedural low-poly planet prototype | Seeded planet gen (heightmap/biomes), chunked low-poly mesh in r3f | ⬜ |
+| 3 | Procedural low-poly planet prototype | Seeded value-noise/fBm heightmap + biomes (sim core), faceted low-poly mesh + water (render), biome-based node placement | ✅ |
 | 4 | Player movement + survival resource loop | Player entity, move intents, hunger/thirst/energy/temp needs, day/night | ⬜ |
 | 5 | Inventory, tools, gathering, crafting | Item/recipe data, inventory model, gather/craft systems + UI | ⬜ |
 | 6 | AI assistant dialogue/objective system | Objective/quest engine, scripted+contextual assistant lines, tutorial hooks | ⬜ |

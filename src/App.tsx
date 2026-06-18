@@ -14,6 +14,7 @@ import WorldCanvas from './render/WorldCanvas';
  */
 export default function App() {
   const setSnapshot = useGameStore((s) => s.setSnapshot);
+  const setTerrain = useGameStore((s) => s.setTerrain);
   const setDispatch = useGameStore((s) => s.setDispatch);
   const ready = useGameStore((s) => s.snapshot !== null);
   const loopRef = useRef<GameLoop | null>(null);
@@ -24,12 +25,13 @@ export default function App() {
 
     const loop = new GameLoop(seed);
     loopRef.current = loop;
+    setTerrain(loop.getTerrain());
     setDispatch(loop.dispatch);
     loop.start(setSnapshot);
     SaveService.saveSeed(loop.seed);
 
     return () => loop.stop();
-  }, [seed, setSnapshot, setDispatch]);
+  }, [seed, setSnapshot, setTerrain, setDispatch]);
 
   return (
     <main className="app">

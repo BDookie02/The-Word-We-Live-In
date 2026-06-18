@@ -44,13 +44,13 @@ WORKING RULES (checkpoint protocol):
   push unless a remote is configured — ask the user for GitHub access if needed).
 
 CURRENT POSITION (update this each checkpoint):
-- Last checkpoint: C2 — Phase 2 complete & verified (build/test/lint green; runtime-verified in
-  a browser preview: 3D scene day+night, tap-to-gather, ad reward flow 0->10 wood).
-- Next exact task: Phase 3 (procedural low-poly planet prototype) — add seeded, deterministic
-  terrain generation (heightmap + biomes) in the sim core (src/sim, pure + unit-tested), and a
-  chunked low-poly terrain mesh in the r3f scene replacing the flat ground plane; scatter
-  resource nodes by biome. UI/render only read snapshots and dispatch intents; keep generation
-  in the sim core.
+- Last checkpoint: C3 — Phase 3 complete & verified (build/test/lint green; runtime-verified:
+  procedural low-poly terrain with biomes + water, nodes seated on the surface).
+- Next exact task: Phase 4 (player movement + survival resource loop) — add tap-to-move player
+  movement with terrain-follow height, plus survival needs (hunger/thirst/energy) as a pure,
+  unit-tested per-tick system in the sim core that decays and is relieved by consuming gathered
+  resources; surface needs in the HUD. Keep all rules in src/sim; UI/render read snapshots and
+  dispatch intents only.
 
 GIT REMOTE STATUS: origin configured + main pushed ->
 https://github.com/BDookie02/The-Word-We-Live-In.git (Git Credential Manager handles auth).

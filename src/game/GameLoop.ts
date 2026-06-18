@@ -1,5 +1,5 @@
 import { MAX_CATCHUP_STEPS, TICK_MS } from '../config/gameConfig';
-import { World, type Intent, type WorldSnapshot } from '../sim';
+import { World, type Intent, type TerrainData, type WorldSnapshot } from '../sim';
 
 /**
  * Real-time driver for the deterministic sim. This is the ONLY place wall-clock time enters
@@ -21,6 +21,11 @@ export class GameLoop {
 
   get seed(): number {
     return this.world.seed;
+  }
+
+  /** Static terrain for the current world (generated once at construction). */
+  getTerrain(): TerrainData {
+    return this.world.terrainData();
   }
 
   /** Submit a player/AI intent. Safe to call from UI/input at any time. */

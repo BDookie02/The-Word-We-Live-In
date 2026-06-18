@@ -4,6 +4,41 @@ Append-only checkpoint log. Newest at top. Each entry = a verifiable save point.
 
 ---
 
+## C3 — Phase 3 complete & verified — 2026-06-18
+**Phase:** 3 (procedural low-poly planet prototype) — ✅ done
+**What was built:**
+- Sim core `src/sim/planet/`:
+  - `noise.ts` — seeded 2D value noise + fBm (deterministic; unit-tested).
+  - `biomes.ts` — biome list/colours + `biomeForHeight` (elevation → biome).
+  - `Terrain.ts` — `generateTerrain(seed)` → `TerrainData` (heightmap + per-vertex biome) and
+    `sampleHeight` (bilinear surface sampling). Unit-tested.
+- `World` now owns static terrain (`terrain`/`terrainData()`); resource nodes are placed on
+  land and chosen by biome, with random amounts. Terrain is delivered to the renderer once
+  (not per tick).
+- State/loop/app wiring: store gains `terrain`; `GameLoop.getTerrain()`; `App` sets terrain once.
+- Render: `TerrainMesh.tsx` builds a non-indexed, flat-shaded, per-triangle biome-coloured
+  mesh; `WorldScene` draws terrain + a water plane and seats player/nodes via `sampleHeight`;
+  `ResourceNodeMesh` takes a `groundY`.
+- Config: added `PLANET` tunables; reworked `DEMO` (node count + amount range).
+
+**Files changed:** +src/sim/planet/{noise,biomes,Terrain}.ts (+ noise/Terrain tests),
+~src/sim/world/World.ts (+ test rewrite), ~src/sim/index.ts, ~src/config/gameConfig.ts,
+~src/state/store.ts, ~src/game/GameLoop.ts, ~src/App.tsx, +src/render/TerrainMesh.tsx,
+~src/render/WorldScene.tsx, ~src/render/ResourceNodeMesh.tsx.
+**What works:** procedural terrain with biomes + water renders; nodes seated on the surface by
+biome; deterministic per seed; day/night intact.
+**What is stubbed (honest):** single terrain mesh (no chunk/LOD yet — Phase 13); no moisture/
+temperature biome inputs (height-only for now); player can't move yet (Phase 4); AdMob seam,
+seed-only save still pending.
+**What failed:** nothing.
+**Validation run:** `npm run test` → 34/34 pass · `npm run build` → tsc + vite OK (992 KB /
+276 KB gz; chunk-size warning noted) · `npm run lint` → clean · **runtime:** browser preview
+showed the faceted low-poly terrain with biomes/water and nodes seated on the surface, no
+console errors.
+**Next exact task:** Phase 4 — player movement (tap-to-move, terrain-follow) + survival needs
+(hunger/thirst/energy) as a pure per-tick sim system, surfaced in the HUD.
+**Git:** committed on `main`, pushed to origin.
+
 ## C2 — Phase 2 complete & verified — 2026-06-18
 **Phase:** 2 (mobile input, camera, portrait/landscape) — ✅ done
 **What was built:**

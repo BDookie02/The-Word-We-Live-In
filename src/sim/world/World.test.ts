@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { World } from './World';
 import { DEMO } from '../../config/gameConfig';
+import { sampleHeight } from '../planet/Terrain';
 
 describe('World', () => {
   it('generates identical worlds from the same seed', () => {
@@ -15,25 +16,35 @@ describe('World', () => {
     expect(a.nodes).not.toEqual(b.nodes);
   });
 
-  it('spawns the configured number of demo nodes', () => {
+  it('spawns the configured number of resource nodes', () => {
     const w = World.fromSeed(5);
     expect(w.nodes).toHaveLength(DEMO.resourceNodeCount);
+  });
+
+  it('places every node on land (above the water level)', () => {
+    const w = World.fromSeed(5);
+    for (const node of w.nodes) {
+      const h = sampleHeight(w.terrain, node.pos.x, node.pos.y);
+      expect(h).toBeGreaterThan(w.terrain.waterLevel);
+    }
   });
 
   it('gather decrements a node and credits the tally', () => {
     const w = World.fromSeed(5);
     const node = w.nodes[0];
     const before = w.gathered[node.kind];
+    const amountBefore = node.amount;
     const changed = w.dispatch({ type: 'gather', nodeId: node.id });
     expect(changed).toBe(true);
     expect(w.gathered[node.kind]).toBe(before + 1);
-    expect(w.nodes.find((n) => n.id === node.id)?.amount).toBe(DEMO.nodeStartAmount - 1);
+    expect(w.nodes.find((n) => n.id === node.id)?.amount).toBe(amountBefore - 1);
   });
 
   it('removes a node once fully depleted', () => {
     const w = World.fromSeed(5);
     const node = w.nodes[0];
-    for (let i = 0; i < DEMO.nodeStartAmount; i++) {
+    const amount = node.amount;
+    for (let i = 0; i < amount; i++) {
       w.dispatch({ type: 'gather', nodeId: node.id });
     }
     expect(w.nodes.find((n) => n.id === node.id)).toBeUndefined();

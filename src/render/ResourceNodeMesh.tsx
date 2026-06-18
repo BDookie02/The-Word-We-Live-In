@@ -55,9 +55,11 @@ function NodeShape({ kind }: { kind: ResourceKind }) {
  */
 export default function ResourceNodeMesh({
   node,
+  groundY,
   onGather,
 }: {
   node: ResourceNode;
+  groundY: number;
   onGather: (id: EntityId) => void;
 }) {
   const handleTap = (e: ThreeEvent<MouseEvent>) => {
@@ -67,7 +69,7 @@ export default function ResourceNodeMesh({
 
   return (
     <group
-      position={[node.pos.x, 0, node.pos.y]}
+      position={[node.pos.x, groundY, node.pos.y]}
       scale={0.75 + node.amount * 0.06}
       onClick={handleTap}
     >

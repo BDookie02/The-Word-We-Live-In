@@ -2,8 +2,8 @@
 
 > Living status document. Updated at every checkpoint. Read this first when resuming.
 
-**Last updated:** 2026-06-18 (Checkpoint C2 — Phase 2 complete & verified)
-**Current phase:** Phase 2 done ✅ → next: Phase 3 (procedural low-poly planet prototype)
+**Last updated:** 2026-06-18 (Checkpoint C3 — Phase 3 complete & verified)
+**Current phase:** Phase 3 done ✅ → next: Phase 4 (player movement + survival resource loop)
 **Overall status:** 🟢 Healthy. No drift. Build/test/lint green; runtime-verified in a browser preview.
 
 ---
@@ -31,16 +31,18 @@ npm run lint       # ESLint
 Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed on this machine).
 
 ## What works right now
-- `npm run dev` boots a playable web prototype rendered in **real 3D (react-three-fiber)**:
-  a low-poly world (ground, player capsule, per-kind resource meshes) with a working
-  **day/night lighting cycle** (verified night→day→night in the browser preview).
+- `npm run dev` boots a playable web prototype rendered in **real 3D (react-three-fiber)**
+  over a **procedurally generated low-poly planet**: seeded heightmap terrain with biomes
+  (water/sand/grass/forest/rock/snow), a water plane at sea level, faceted flat-shaded look,
+  and a working **day/night lighting cycle**.
+- **Procedural generation lives in the sim core** (`src/sim/planet`): deterministic value
+  noise + fBm → heightmap + biomes; resource nodes are scattered onto land and chosen by
+  biome, seated on the surface via bilinear height sampling. Same seed → identical planet.
 - **Mobile camera/input:** touch-friendly camera rig (drag-pan + pinch-zoom via drei
-  MapControls); tap a resource node to gather (r3f raycast pointer → `gather` intent).
+  MapControls); tap a resource node to gather.
 - HUD overlay (clock, resource tallies, ad button) adapts to portrait/landscape.
-- **Monetization verified at runtime:** "Watch ad" → MockAdService → +10 wood (saw 0→10).
-- Deterministic sim core: same seed → identical world (proven by tests). Sim core untouched
-  by Phase 2 (render/input read snapshots only).
-- `npm run test` (23 passing), `npm run build` (tsc + vite; ~989 KB JS / 275 KB gz — three.js
+- **Monetization** verified at runtime earlier: "Watch ad" → MockAdService → +10 wood.
+- `npm run test` (34 passing), `npm run build` (tsc + vite; ~992 KB JS / 276 KB gz — three.js
   is heavy, code-splitting deferred to Phase 15), `npm run lint` (clean) — all green.
 
 ## Built so far
@@ -49,8 +51,9 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 | 0 Inspect + choose stack | ✅ done | Empty workspace, Node 20.11.1, git 2.43, no Godot/Java. Stack = TS/React/Capacitor/AdMob. |
 | 1 Runnable skeleton | ✅ done | Vite+React+TS tooling; pure sim core (RNG/clock/World/intents); GameLoop; Zustand bridge; AdService abstraction; HUD. Verified green. |
 | 2 Mobile input/camera/orientation | ✅ done | react-three-fiber 3D scene; pure day/night lighting model; drei MapControls camera (pan/pinch); tap-to-gather; responsive HUD. Build/test/lint green + runtime-verified. |
-| 3 Procedural planet prototype | ⬜ next | See ROADMAP.md |
-| 4–16 | ⬜ not started | See ROADMAP.md |
+| 3 Procedural planet prototype | ✅ done | Seeded value-noise/fBm heightmap + biomes (sim core); faceted low-poly terrain mesh + water; biome-based node placement on the surface. Build/test/lint green + runtime-verified. |
+| 4 Player movement + survival loop | ⬜ next | See ROADMAP.md |
+| 5–16 | ⬜ not started | See ROADMAP.md |
 
 ## What is stubbed (and honestly NOT finished)
 - AdService: real AdMob impl deferred; **MockAdService** used in dev/web.
@@ -62,14 +65,15 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 - None yet. (Android build blocked until JDK 17 installed — not needed before Phase 16.)
 
 ## Next exact task
-Phase 3 — procedural low-poly planet prototype: add seeded terrain generation (heightmap +
-biomes) in the sim core (pure, deterministic), and a chunked low-poly terrain mesh in the r3f
-scene that replaces the flat ground plane. Scatter resource nodes by biome. Keep generation in
-the sim core (testable) and rendering in the render layer.
+Phase 4 — player movement + survival resource loop: add a movable player (tap-to-move toward a
+point / target on the terrain, with terrain-follow height), and survival needs
+(hunger/thirst/energy) as a per-tick system in the sim core that decays over time and is
+relieved by consuming gathered food/water. Surface needs in the HUD. Add a fail/low-state.
+Keep needs logic pure + tested in the sim core.
 
-Known tunables to revisit: in-world day length is currently ~60s real per day
-(TICKS_PER_HOUR=50 @20Hz) — fine for demoing day/night, likely lengthen for real survival in
-Phase 4. Bundle code-splitting deferred to Phase 15.
+Known tunables to revisit: in-world day length is ~60s real per day (TICKS_PER_HOUR=50 @20Hz) —
+likely lengthen for real survival pacing in Phase 4. Terrain is a single mesh; true chunking/LOD
+comes with the planet-scale zoom in Phase 13. Bundle code-splitting deferred to Phase 15.
 
 ## Current architecture assumptions
 - Sim core is deterministic and renderer-agnostic; UI never mutates world directly — it

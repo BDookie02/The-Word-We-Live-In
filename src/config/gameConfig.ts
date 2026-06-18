@@ -24,9 +24,19 @@ export const ADS = {
   rewardCacheAmount: 10,
 } as const;
 
-// Phase-1 demo content scale (resource nodes scattered at world start).
+// Procedural terrain (Phase 3). gridSize cells per side -> (gridSize+1)^2 vertices.
+export const PLANET = {
+  gridSize: 64,
+  worldSize: 140, // world units across the terrain patch
+  maxHeight: 16,
+  waterLevel: 3.2,
+  noiseFrequency: 2.6, // higher = smaller, more frequent features
+  noiseOctaves: 5,
+} as const;
+
+// Starter resource nodes scattered across the generated terrain (by biome).
 export const DEMO = {
-  resourceNodeCount: 8,
-  worldHalfExtent: 50, // nodes spawn within [-50, 50] on each axis
-  nodeStartAmount: 5,
+  resourceNodeCount: 26,
+  nodeAmountMin: 3,
+  nodeAmountMax: 6,
 } as const;
