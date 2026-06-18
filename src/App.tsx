@@ -5,7 +5,7 @@ import { SaveService } from './services/save/SaveService';
 import { useGameStore } from './state/store';
 import { hashStringToSeed } from './sim';
 import Hud from './ui/Hud';
-import WorldView from './ui/WorldView';
+import WorldCanvas from './render/WorldCanvas';
 
 /**
  * Root component. Owns the GameLoop lifecycle: creates it with a seed, wires it to the
@@ -35,7 +35,7 @@ export default function App() {
     <main className="app">
       {ready ? (
         <>
-          <WorldView />
+          <WorldCanvas />
           <Hud />
         </>
       ) : (

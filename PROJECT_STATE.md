@@ -2,9 +2,9 @@
 
 > Living status document. Updated at every checkpoint. Read this first when resuming.
 
-**Last updated:** 2026-06-18 (Checkpoint C1 — Phase 1 complete & verified)
-**Current phase:** Phase 1 done ✅ → next: Phase 2 (mobile input, camera, portrait/landscape)
-**Overall status:** 🟢 Healthy. No drift. Build/test/lint all green. Committed `b5e4f0c`.
+**Last updated:** 2026-06-18 (Checkpoint C2 — Phase 2 complete & verified)
+**Current phase:** Phase 2 done ✅ → next: Phase 3 (procedural low-poly planet prototype)
+**Overall status:** 🟢 Healthy. No drift. Build/test/lint green; runtime-verified in a browser preview.
 
 ---
 
@@ -31,21 +31,26 @@ npm run lint       # ESLint
 Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed on this machine).
 
 ## What works right now
-- `npm run dev` boots a playable web prototype: a seeded world renders as a top-down map;
-  the in-world clock advances (day/night tint); tapping a resource node gathers it and
-  updates the HUD tally; the "Watch ad" button runs the full opt-in rewarded-ad flow
-  (MockAdService) and grants a resource cache.
-- Deterministic sim core: same seed → identical world (proven by tests).
-- `npm run test` (18 passing), `npm run build` (tsc + vite, 150 KB JS / 49 KB gzip),
-  `npm run lint` (clean, incl. sim-core purity rule) — all green.
+- `npm run dev` boots a playable web prototype rendered in **real 3D (react-three-fiber)**:
+  a low-poly world (ground, player capsule, per-kind resource meshes) with a working
+  **day/night lighting cycle** (verified night→day→night in the browser preview).
+- **Mobile camera/input:** touch-friendly camera rig (drag-pan + pinch-zoom via drei
+  MapControls); tap a resource node to gather (r3f raycast pointer → `gather` intent).
+- HUD overlay (clock, resource tallies, ad button) adapts to portrait/landscape.
+- **Monetization verified at runtime:** "Watch ad" → MockAdService → +10 wood (saw 0→10).
+- Deterministic sim core: same seed → identical world (proven by tests). Sim core untouched
+  by Phase 2 (render/input read snapshots only).
+- `npm run test` (23 passing), `npm run build` (tsc + vite; ~989 KB JS / 275 KB gz — three.js
+  is heavy, code-splitting deferred to Phase 15), `npm run lint` (clean) — all green.
 
 ## Built so far
 | Phase | Status | Notes |
 |------|--------|-------|
 | 0 Inspect + choose stack | ✅ done | Empty workspace, Node 20.11.1, git 2.43, no Godot/Java. Stack = TS/React/Capacitor/AdMob. |
-| 1 Runnable skeleton | ✅ done | Vite+React+TS tooling; pure sim core (RNG/clock/World/intents); GameLoop; Zustand bridge; AdService abstraction; HUD + placeholder WorldView. Verified green. |
-| 2 Mobile input/camera/orientation | ⬜ next | See ROADMAP.md |
-| 3–16 | ⬜ not started | See ROADMAP.md |
+| 1 Runnable skeleton | ✅ done | Vite+React+TS tooling; pure sim core (RNG/clock/World/intents); GameLoop; Zustand bridge; AdService abstraction; HUD. Verified green. |
+| 2 Mobile input/camera/orientation | ✅ done | react-three-fiber 3D scene; pure day/night lighting model; drei MapControls camera (pan/pinch); tap-to-gather; responsive HUD. Build/test/lint green + runtime-verified. |
+| 3 Procedural planet prototype | ⬜ next | See ROADMAP.md |
+| 4–16 | ⬜ not started | See ROADMAP.md |
 
 ## What is stubbed (and honestly NOT finished)
 - AdService: real AdMob impl deferred; **MockAdService** used in dev/web.
@@ -57,9 +62,14 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 - None yet. (Android build blocked until JDK 17 installed — not needed before Phase 16.)
 
 ## Next exact task
-Phase 2 — mobile input, camera, portrait/landscape: add react-three-fiber + drei, replace
-the placeholder WorldView with a real low-poly r3f scene + camera rig, and add a touch/gesture
-input layer (tap / drag-pan / pinch-zoom) that emits intents. Keep the sim core untouched.
+Phase 3 — procedural low-poly planet prototype: add seeded terrain generation (heightmap +
+biomes) in the sim core (pure, deterministic), and a chunked low-poly terrain mesh in the r3f
+scene that replaces the flat ground plane. Scatter resource nodes by biome. Keep generation in
+the sim core (testable) and rendering in the render layer.
+
+Known tunables to revisit: in-world day length is currently ~60s real per day
+(TICKS_PER_HOUR=50 @20Hz) — fine for demoing day/night, likely lengthen for real survival in
+Phase 4. Bundle code-splitting deferred to Phase 15.
 
 ## Current architecture assumptions
 - Sim core is deterministic and renderer-agnostic; UI never mutates world directly — it

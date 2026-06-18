@@ -44,11 +44,13 @@ WORKING RULES (checkpoint protocol):
   push unless a remote is configured — ask the user for GitHub access if needed).
 
 CURRENT POSITION (update this each checkpoint):
-- Last checkpoint: C1 — Phase 1 complete & verified (build/test/lint green; commit b5e4f0c).
-- Next exact task: Phase 2 (mobile input, camera, portrait/landscape) — add react-three-fiber
-  + drei, replace the placeholder SVG WorldView with a low-poly r3f scene + camera rig, and
-  add a touch/gesture input layer (tap / drag-pan / pinch-zoom) that emits intents. Do NOT
-  modify the sim core's public contract; UI/render only read snapshots and dispatch intents.
+- Last checkpoint: C2 — Phase 2 complete & verified (build/test/lint green; runtime-verified in
+  a browser preview: 3D scene day+night, tap-to-gather, ad reward flow 0->10 wood).
+- Next exact task: Phase 3 (procedural low-poly planet prototype) — add seeded, deterministic
+  terrain generation (heightmap + biomes) in the sim core (src/sim, pure + unit-tested), and a
+  chunked low-poly terrain mesh in the r3f scene replacing the flat ground plane; scatter
+  resource nodes by biome. UI/render only read snapshots and dispatch intents; keep generation
+  in the sim core.
 
 GIT REMOTE STATUS: origin configured + main pushed ->
 https://github.com/BDookie02/The-Word-We-Live-In.git (Git Credential Manager handles auth).

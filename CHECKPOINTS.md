@@ -4,6 +4,38 @@ Append-only checkpoint log. Newest at top. Each entry = a verifiable save point.
 
 ---
 
+## C2 — Phase 2 complete & verified — 2026-06-18
+**Phase:** 2 (mobile input, camera, portrait/landscape) — ✅ done
+**What was built:**
+- Deps: `three`, `@react-three/fiber` (v8, React 18), `@react-three/drei` (v9), `@types/three`.
+- `src/render/dayNight.ts` — pure day/night lighting model (sun intensity/position + sky colour
+  from a day fraction); unit-tested.
+- `src/render/WorldScene.tsx` — low-poly 3D scene: fog/sky, ambient+hemisphere+directional
+  ("sun") lights, flat ground plane, player capsule, per-kind resource meshes.
+- `src/render/ResourceNodeMesh.tsx` — flat-shaded shape per resource kind; tap (raycast
+  pointer) dispatches `gather`; scale shrinks as the node depletes.
+- `src/input/CameraRig.tsx` — drei MapControls tuned for touch (1-finger pan, 2-finger pinch
+  zoom; rotation off for mobile stability).
+- `src/render/WorldCanvas.tsx` — hosts the r3f `<Canvas>` (fills container → portrait/landscape).
+- Wired into `App.tsx`; removed the old SVG `WorldView`; CSS updated (`.world-canvas`,
+  `touch-action:none`). Added `.claude/launch.json` for the dev preview.
+
+**Files changed:** +src/render/{dayNight.ts,dayNight.test.ts,WorldScene.tsx,ResourceNodeMesh.tsx,
+WorldCanvas.tsx}, +src/input/CameraRig.tsx, ~src/App.tsx, ~src/index.css, +.claude/launch.json,
+-src/ui/WorldView.tsx, ~package.json/lock.
+**What works:** 3D world renders day & night; camera pan/zoom + tap-to-gather wired; HUD overlay;
+rewarded-ad reward flow runs in the live app.
+**What is stubbed (honest):** terrain is a flat plane (real procedural terrain = Phase 3);
+AdMob real impl still a seam; save still seed-only; no NPCs/survival yet.
+**What failed:** nothing. (A killed background dev-server process reported exit 255 — expected,
+not a code failure.)
+**Validation run:** `npm run test` → 23/23 pass · `npm run build` → tsc + vite OK (989 KB / 275 KB
+gz, chunk-size warning noted) · `npm run lint` → clean · **runtime:** browser preview showed the
+3D scene at night and day with no console errors, and the ad button moved wood 0→10.
+**Next exact task:** Phase 3 — seeded procedural terrain (heightmap+biomes) in the sim core +
+chunked low-poly terrain mesh replacing the flat ground.
+**Git:** committed on `main`, pushed to origin.
+
 ## C1 — Phase 1 complete & verified — 2026-06-18
 **Phase:** 1 (runnable skeleton) — ✅ done
 **What was built:**
