@@ -4,6 +4,37 @@ Append-only checkpoint log. Newest at top. Each entry = a verifiable save point.
 
 ---
 
+## C5 — Phase 5 complete & verified — 2026-06-18
+**Phase:** 5 (inventory, tools, gathering, crafting) — ✅ done
+**What was built:**
+- Sim core `src/sim/items/`:
+  - `items.ts` — `ItemId` (resources + materials + tools), `ITEMS` defs/icons, `ITEM_ORDER`,
+    `TOOL_FOR_RESOURCE` (axe→wood, pickaxe→stone).
+  - `inventory.ts` — `Inventory` (count map) + `invCount/invAdd/invHas/invConsume` (tested).
+  - `recipes.ts` — data-driven `RECIPES` (plank, rope, sharp_stone, axe, pickaxe, spear).
+- `World`: replaced the flat `gathered` tally with `inventory`; `gather` credits the inventory
+  and the matching tool doubles yield; `craft` intent validates + consumes inputs and produces
+  output (optional `requiresTool`); `eat`/`grantCache` updated; snapshot carries `inventory`.
+- Intent `craft` added.
+- UI: HUD inventory row (icons + counts) + Eat/Drink/Craft/Ad actions; new `CraftingPanel`
+  listing recipes with affordability highlighting and a Craft button.
+
+**Files changed:** +src/sim/items/{items,inventory,recipes}.ts (+ inventory test),
+~src/sim/intents/intents.ts, ~src/sim/world/World.ts (+ test updates/additions),
+~src/sim/index.ts, ~src/ui/Hud.tsx, +src/ui/CraftingPanel.tsx, ~src/index.css.
+**What works:** gather→inventory; craft chain resources→materials→tools; tool-doubled gather;
+crafting UI; everything else from prior phases intact.
+**What is stubbed (honest):** no objectives/AI assistant yet (Phase 6); no NPCs/settlement/eras;
+AdMob seam + seed-only save still pending; survival/craft balance first-pass.
+**What failed:** nothing in code. The browser **screenshot** tool timed out this round (transient
+preview-tooling issue); app boot confirmed via console (`[ads:mock] initialized`, no errors).
+**Validation run:** `npm run test` → 58/58 pass · `npm run build` → tsc + vite OK (999 KB / 278 KB
+gz; chunk-size warning noted) · `npm run lint` → clean · **runtime:** app boots with no console
+errors (visual screenshot not captured this round — see above).
+**Next exact task:** Phase 6 — objective/quest model (small numerous tasks auto-tracked) + a
+contextual scripted AI-assistant message feed, surfaced in the HUD.
+**Git:** committed on `main`, pushed to origin.
+
 ## C4 — Phase 4 complete & verified — 2026-06-18
 **Phase:** 4 (player movement + survival resource loop) — ✅ done
 **What was built:**

@@ -12,6 +12,23 @@ export {
 export { BIOMES, BIOME_COLOR, biomeForHeight, type Biome } from './planet/biomes';
 export { createValueNoise, fbm, type Noise2D } from './planet/noise';
 export {
+  ITEMS,
+  ITEM_ORDER,
+  TOOL_FOR_RESOURCE,
+  type ItemId,
+  type ItemDef,
+  type ItemCategory,
+} from './items/items';
+export {
+  invAdd,
+  invConsume,
+  invCount,
+  invHas,
+  type Inventory,
+  type ItemCost,
+} from './items/inventory';
+export { RECIPES, recipeById, type Recipe } from './items/recipes';
+export {
   RESOURCE_KINDS,
   emptyTally,
   fullNeeds,

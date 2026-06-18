@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { World } from './World';
 import { DEMO } from '../../config/gameConfig';
 import { sampleHeight } from '../planet/Terrain';
+import { invAdd, invCount } from '../items/inventory';
 
 describe('World', () => {
   it('generates identical worlds from the same seed', () => {
@@ -29,14 +30,14 @@ describe('World', () => {
     }
   });
 
-  it('gather decrements a node and credits the tally', () => {
+  it('gather decrements a node and credits the inventory', () => {
     const w = World.fromSeed(5);
     const node = w.nodes[0];
-    const before = w.gathered[node.kind];
+    const before = invCount(w.inventory, node.kind);
     const amountBefore = node.amount;
     const changed = w.dispatch({ type: 'gather', nodeId: node.id });
     expect(changed).toBe(true);
-    expect(w.gathered[node.kind]).toBe(before + 1);
+    expect(invCount(w.inventory, node.kind)).toBe(before + 1);
     expect(w.nodes.find((n) => n.id === node.id)?.amount).toBe(amountBefore - 1);
   });
 
@@ -54,7 +55,7 @@ describe('World', () => {
   it('grantCache adds the rewarded bonus (ad reward flow)', () => {
     const w = World.fromSeed(5);
     w.dispatch({ type: 'grantCache', kind: 'wood', amount: 10 });
-    expect(w.gathered.wood).toBe(10);
+    expect(invCount(w.inventory, 'wood')).toBe(10);
   });
 
   it('tick advances the clock deterministically', () => {
@@ -80,7 +81,7 @@ describe('World survival & movement', () => {
     w.player.needs.hunger = 40;
     const ok = w.dispatch({ type: 'eat' });
     expect(ok).toBe(true);
-    expect(w.gathered.food).toBe(2);
+    expect(invCount(w.inventory, 'food')).toBe(2);
     expect(w.player.needs.hunger).toBeGreaterThan(40);
   });
 
@@ -116,5 +117,44 @@ describe('World survival & movement', () => {
     expect(revived).toBe(true);
     expect(w.player.status).toBe('alive');
     expect(w.player.needs.health).toBeGreaterThan(0);
+  });
+});
+
+describe('World crafting & tools', () => {
+  it('crafts a recipe, consuming inputs and producing output', () => {
+    const w = World.fromSeed(5);
+    w.dispatch({ type: 'grantCache', kind: 'stone', amount: 2 });
+    const ok = w.dispatch({ type: 'craft', recipeId: 'sharp_stone' });
+    expect(ok).toBe(true);
+    expect(invCount(w.inventory, 'stone')).toBe(0);
+    expect(invCount(w.inventory, 'sharp_stone')).toBe(1);
+  });
+
+  it('refuses to craft without enough inputs', () => {
+    const w = World.fromSeed(5);
+    w.dispatch({ type: 'grantCache', kind: 'stone', amount: 1 });
+    expect(w.dispatch({ type: 'craft', recipeId: 'sharp_stone' })).toBe(false);
+    expect(invCount(w.inventory, 'stone')).toBe(1); // unchanged
+  });
+
+  it('supports a full chain up to a stone axe', () => {
+    const w = World.fromSeed(5);
+    w.dispatch({ type: 'grantCache', kind: 'wood', amount: 4 });
+    w.dispatch({ type: 'grantCache', kind: 'stone', amount: 2 });
+    w.dispatch({ type: 'grantCache', kind: 'fiber', amount: 3 });
+    expect(w.dispatch({ type: 'craft', recipeId: 'sharp_stone' })).toBe(true);
+    expect(w.dispatch({ type: 'craft', recipeId: 'rope' })).toBe(true);
+    expect(w.dispatch({ type: 'craft', recipeId: 'axe' })).toBe(true);
+    expect(invCount(w.inventory, 'axe')).toBe(1);
+  });
+
+  it('doubles gather yield when the matching tool is owned', () => {
+    const w = World.fromSeed(5);
+    const woodNode = w.nodes.find((n) => n.kind === 'wood');
+    expect(woodNode).toBeDefined();
+    invAdd(w.inventory, 'axe', 1);
+    const before = invCount(w.inventory, 'wood');
+    w.dispatch({ type: 'gather', nodeId: woodNode!.id });
+    expect(invCount(w.inventory, 'wood')).toBe(before + 2);
   });
 });

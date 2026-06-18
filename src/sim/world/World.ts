@@ -1,15 +1,11 @@
 import { DEMO, SURVIVAL } from '../../config/gameConfig';
 import { createRng, type RNG } from '../core/rng';
 import { SimClock, type CalendarTime } from '../core/SimClock';
-import {
-  emptyTally,
-  fullNeeds,
-  type PlayerState,
-  type ResourceKind,
-  type ResourceNode,
-  type ResourceTally,
-} from '../core/types';
+import { fullNeeds, type PlayerState, type ResourceKind, type ResourceNode } from '../core/types';
 import type { Intent } from '../intents/intents';
+import { invAdd, invConsume, invCount, type Inventory } from '../items/inventory';
+import { TOOL_FOR_RESOURCE } from '../items/items';
+import { recipeById } from '../items/recipes';
 import { biomeForHeight } from '../planet/biomes';
 import { generateTerrain, sampleHeight, type TerrainData } from '../planet/Terrain';
 import { stepMovement } from '../systems/movement';
@@ -31,7 +27,7 @@ export interface WorldSnapshot {
   isNight: boolean;
   player: PlayerSnapshot;
   nodes: ResourceNode[];
-  gathered: ResourceTally;
+  inventory: Inventory;
 }
 
 /** Resource kinds that can spawn in each biome (by biome index from `biomeForHeight`). */
@@ -55,13 +51,13 @@ export class World {
   readonly terrain: TerrainData;
   player: PlayerState;
   nodes: ResourceNode[];
-  gathered: ResourceTally;
+  inventory: Inventory;
 
   constructor(seed: number) {
     this.seed = seed >>> 0;
     this.rng = createRng(this.seed);
     this.clock = new SimClock();
-    this.gathered = emptyTally();
+    this.inventory = {};
     this.terrain = generateTerrain(this.seed);
     this.player = {
       id: 'player',
@@ -131,7 +127,10 @@ export class World {
         const node = this.nodes.find((n) => n.id === intent.nodeId);
         if (!node || node.amount <= 0) return false;
         node.amount -= 1;
-        this.gathered[node.kind] += 1;
+        // The matching tool doubles the yield.
+        const tool = TOOL_FOR_RESOURCE[node.kind];
+        const yieldQty = tool && invCount(this.inventory, tool) > 0 ? 2 : 1;
+        invAdd(this.inventory, node.kind, yieldQty);
         if (node.amount <= 0) {
           this.nodes = this.nodes.filter((n) => n.id !== node.id);
         }
@@ -139,7 +138,17 @@ export class World {
       }
 
       case 'grantCache': {
-        this.gathered[intent.kind] += intent.amount;
+        invAdd(this.inventory, intent.kind, intent.amount);
+        return true;
+      }
+
+      case 'craft': {
+        if (!alive) return false;
+        const recipe = recipeById(intent.recipeId);
+        if (!recipe) return false;
+        if (recipe.requiresTool && invCount(this.inventory, recipe.requiresTool) < 1) return false;
+        if (!invConsume(this.inventory, recipe.inputs)) return false;
+        invAdd(this.inventory, recipe.output.item, recipe.output.qty);
         return true;
       }
 
@@ -150,8 +159,8 @@ export class World {
       }
 
       case 'eat': {
-        if (!alive || this.gathered.food < 1) return false;
-        this.gathered.food -= 1;
+        if (!alive || invCount(this.inventory, 'food') < 1) return false;
+        invConsume(this.inventory, { food: 1 });
         this.player.needs.hunger = clamp01to100(this.player.needs.hunger + SURVIVAL.eatRestore);
         return true;
       }
@@ -212,7 +221,7 @@ export class World {
         nearWater: this.isNearWater(),
       },
       nodes: this.nodes.map((n) => ({ ...n, pos: { ...n.pos } })),
-      gathered: { ...this.gathered },
+      inventory: { ...this.inventory },
     };
   }
 }

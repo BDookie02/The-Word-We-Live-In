@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { useGameStore } from '../state/store';
 import { useRewardedAd } from './useRewardedAd';
+import CraftingPanel from './CraftingPanel';
 import { ADS } from '../config/gameConfig';
-import { RESOURCE_KINDS, type NeedLevels } from '../sim';
+import { ITEM_ORDER, ITEMS, invCount, type NeedLevels } from '../sim';
 
 const NEED_META: { key: keyof NeedLevels; label: string; icon: string }[] = [
   { key: 'health', label: 'Health', icon: '❤️' },
@@ -32,17 +34,19 @@ function NeedBar({ icon, label, value }: { icon: string; label: string; value: n
   );
 }
 
-/** Heads-up overlay: world clock, survival needs, resource tallies, and actions. */
+/** Heads-up overlay: world clock, survival needs, inventory, and actions. */
 export default function Hud() {
   const snapshot = useGameStore((s) => s.snapshot);
   const dispatch = useGameStore((s) => s.dispatch);
   const { watchForReward, adBusy } = useRewardedAd();
+  const [craftOpen, setCraftOpen] = useState(false);
   if (!snapshot) return null;
 
-  const { player } = snapshot;
+  const { player, inventory } = snapshot;
   const alive = player.status === 'alive';
   const { day, hour, minute } = snapshot.time;
   const clock = `Day ${day} · ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+  const owned = ITEM_ORDER.filter((id) => invCount(inventory, id) > 0);
 
   return (
     <div className="hud">
@@ -59,11 +63,14 @@ export default function Hud() {
         ))}
       </div>
 
+      {craftOpen && <CraftingPanel onClose={() => setCraftOpen(false)} />}
+
       <footer className="hud__bar hud__bar--bottom">
-        <div className="hud__resources">
-          {RESOURCE_KINDS.map((kind) => (
-            <span key={kind} className={`res res--${kind}`}>
-              {kind}: <b>{snapshot.gathered[kind]}</b>
+        <div className="hud__inv">
+          {owned.length === 0 && <span className="hud__inv-empty">Gather resources to begin…</span>}
+          {owned.map((id) => (
+            <span key={id} className="inv-item" title={ITEMS[id].name}>
+              {ITEMS[id].icon} <b>{invCount(inventory, id)}</b>
             </span>
           ))}
         </div>
@@ -71,7 +78,7 @@ export default function Hud() {
         <div className="hud__actions">
           <button
             className="hud__btn"
-            disabled={!alive || snapshot.gathered.food < 1}
+            disabled={!alive || invCount(inventory, 'food') < 1}
             onClick={() => dispatch({ type: 'eat' })}
           >
             🍖 Eat
@@ -83,6 +90,13 @@ export default function Hud() {
             title={player.nearWater ? 'Drink from the water' : 'Move to the shore to drink'}
           >
             💧 Drink
+          </button>
+          <button
+            className={`hud__btn ${craftOpen ? 'hud__btn--active' : ''}`}
+            disabled={!alive}
+            onClick={() => setCraftOpen((v) => !v)}
+          >
+            🔨 Craft
           </button>
           <button
             className="hud__btn hud__btn--ad"

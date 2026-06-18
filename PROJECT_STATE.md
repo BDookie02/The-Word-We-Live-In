@@ -2,9 +2,9 @@
 
 > Living status document. Updated at every checkpoint. Read this first when resuming.
 
-**Last updated:** 2026-06-18 (Checkpoint C4 — Phase 4 complete & verified)
-**Current phase:** Phase 4 done ✅ → next: Phase 5 (inventory, tools, gathering, crafting)
-**Overall status:** 🟢 Healthy. No drift. Build/test/lint green; runtime-verified in a browser preview.
+**Last updated:** 2026-06-18 (Checkpoint C5 — Phase 5 complete & verified)
+**Current phase:** Phase 5 done ✅ → next: Phase 6 (AI assistant dialogue/objective system)
+**Overall status:** 🟢 Healthy. No drift. Build/test/lint green; app boots clean (preview screenshot tool timed out this round — verified via console + tests).
 
 ---
 
@@ -43,12 +43,16 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
   food to relieve hunger, drink at the shoreline to relieve thirst; energy drains while moving
   and recovers while idle; health drains when a need is empty → **collapse**, which offers a
   rewarded-ad **revive**. Needs bars + Eat/Drink actions in the HUD.
+- **Inventory + crafting:** item model (resources/materials/tools) + count inventory in the
+  sim core; data-driven recipes (plank, rope, sharp_stone → axe/pickaxe/spear); `craft` intent
+  consumes inputs and yields outputs; matching tools double gather yield (axe→wood, pickaxe→
+  stone). HUD shows the inventory; a crafting panel lists recipes with affordability.
 - **Mobile camera/input:** touch-friendly camera rig (drag-pan + pinch-zoom via drei
   MapControls); tap a resource node to gather, tap ground to move.
-- HUD overlay (clock, needs, resource tallies, actions) adapts to portrait/landscape.
+- HUD overlay (clock, needs, inventory, actions, crafting panel) adapts to portrait/landscape.
 - **Monetization** verified at runtime earlier: "Watch ad" → MockAdService → +10 wood;
   revive flow uses the `reward_revive` placement.
-- `npm run test` (50 passing), `npm run build` (tsc + vite; ~996 KB JS / 278 KB gz — three.js
+- `npm run test` (58 passing), `npm run build` (tsc + vite; ~999 KB JS / 278 KB gz — three.js
   is heavy, code-splitting deferred to Phase 15), `npm run lint` (clean) — all green.
 
 ## Built so far
@@ -59,8 +63,9 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 | 2 Mobile input/camera/orientation | ✅ done | react-three-fiber 3D scene; pure day/night lighting model; drei MapControls camera (pan/pinch); tap-to-gather; responsive HUD. Build/test/lint green + runtime-verified. |
 | 3 Procedural planet prototype | ✅ done | Seeded value-noise/fBm heightmap + biomes (sim core); faceted low-poly terrain mesh + water; biome-based node placement on the surface. Build/test/lint green + runtime-verified. |
 | 4 Player movement + survival loop | ✅ done | Tap-to-move (terrain-follow); pure needs system (health/hunger/thirst/energy) + eat/drink; collapse + ad-revive; HUD needs bars. Build/test/lint green + runtime-verified. |
-| 5 Inventory, tools, gathering, crafting | ⬜ next | See ROADMAP.md |
-| 6–16 | ⬜ not started | See ROADMAP.md |
+| 5 Inventory, tools, gathering, crafting | ✅ done | Item model + inventory; data-driven recipes; craft intent; tool-doubled gather; HUD inventory + crafting panel. Build/test/lint green; app boots clean. |
+| 6 AI assistant dialogue/objectives | ⬜ next | See ROADMAP.md |
+| 7–16 | ⬜ not started | See ROADMAP.md |
 
 ## What is stubbed (and honestly NOT finished)
 - AdService: real AdMob impl deferred; **MockAdService** used in dev/web.
@@ -72,14 +77,16 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 - None yet. (Android build blocked until JDK 17 installed — not needed before Phase 16.)
 
 ## Next exact task
-Phase 5 — inventory, tools, gathering, crafting: introduce an item model + inventory in the sim
-core (replacing/extending the flat `gathered` tally), data-driven crafting recipes, a craft
-intent that consumes inputs and produces tools/items, and tool-gated/faster gathering. Surface
-inventory + a crafting panel in the HUD. Keep item/recipe data + crafting rules pure + tested.
+Phase 6 — AI assistant dialogue/objective system: add an objective/quest model in the sim core
+(small, numerous, easily-completable tasks like "gather 5 wood", "craft an axe", "drink water"),
+auto-tracked against world state each tick, with completion + rewards. Add the AI assistant as a
+contextual message feed (scripted lines triggered by events/objectives — no LLM needed). Surface
+current objectives + assistant messages in the HUD. Keep objective definitions + progress logic
+pure + tested in the sim core.
 
-Known tunables to revisit: day length now ~3 min real/day (TICKS_PER_HOUR=150). Survival decay
-rates in `SURVIVAL` are first-pass — balance later. Terrain is a single mesh (chunking/LOD =
-Phase 13). Bundle code-splitting = Phase 15.
+Known tunables to revisit: day length ~3 min real/day (TICKS_PER_HOUR=150). Survival decay rates
+in `SURVIVAL` are first-pass. Terrain is a single mesh (chunking/LOD = Phase 13). Bundle
+code-splitting = Phase 15. Preview screenshot tool was flaky at C5 (app verified via console+tests).
 
 ## Current architecture assumptions
 - Sim core is deterministic and renderer-agnostic; UI never mutates world directly — it

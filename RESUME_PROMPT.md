@@ -44,14 +44,14 @@ WORKING RULES (checkpoint protocol):
   push unless a remote is configured — ask the user for GitHub access if needed).
 
 CURRENT POSITION (update this each checkpoint):
-- Last checkpoint: C4 — Phase 4 complete & verified (build/test/lint green; runtime-verified:
-  needs bars, contextual eat/drink, tap-to-move). 50 tests passing.
-- Next exact task: Phase 5 (inventory, tools, gathering, crafting) — add an item model +
-  inventory in the sim core (extending/replacing the flat `gathered` tally), data-driven
-  crafting recipes, a `craft` intent that consumes inputs and yields tools/items, and
-  tool-gated or faster gathering. Surface inventory + a crafting panel in the HUD. Keep item/
-  recipe data + crafting rules pure and unit-tested in src/sim; UI/render read snapshots and
-  dispatch intents only.
+- Last checkpoint: C5 — Phase 5 complete & verified (build/test/lint green; 58 tests passing;
+  app boots clean — screenshot tool was flaky this round, verified via console + tests).
+- Next exact task: Phase 6 (AI assistant dialogue/objective system) — add an objective/quest
+  model in the sim core (small, numerous, easily-completable tasks auto-tracked against world
+  state each tick, with completion + rewards) and a contextual scripted AI-assistant message
+  feed (event/objective-triggered lines — no LLM). Surface objectives + assistant messages in
+  the HUD. Keep objective defs + progress logic pure and unit-tested in src/sim; UI/render read
+  snapshots and dispatch intents only.
 
 GIT REMOTE STATUS: origin configured + main pushed ->
 https://github.com/BDookie02/The-Word-We-Live-In.git (Git Credential Manager handles auth).

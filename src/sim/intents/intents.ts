@@ -16,6 +16,8 @@ export type Intent =
   | { type: 'eat' }
   /** Drink to relieve thirst (only succeeds at the shoreline). */
   | { type: 'drink' }
+  /** Craft a recipe by id, consuming its inputs. */
+  | { type: 'craft'; recipeId: string }
   /** Recover from a collapse — used by the rewarded-ad "revive" reward flow. */
   | { type: 'revive' };
 

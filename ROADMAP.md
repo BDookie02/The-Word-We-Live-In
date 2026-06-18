@@ -14,7 +14,7 @@ Phased build plan. Each phase is small enough to verify before moving on. Status
 | 2 | Mobile input, camera, portrait/landscape | r3f 3D scene, day/night, drei MapControls (pan/pinch), tap-to-gather, responsive HUD | ✅ |
 | 3 | Procedural low-poly planet prototype | Seeded value-noise/fBm heightmap + biomes (sim core), faceted low-poly mesh + water (render), biome-based node placement | ✅ |
 | 4 | Player movement + survival resource loop | Tap-to-move (terrain-follow), needs (health/hunger/thirst/energy), eat/drink, collapse + ad-revive | ✅ |
-| 5 | Inventory, tools, gathering, crafting | Item/recipe data, inventory model, gather/craft systems + UI | ⬜ |
+| 5 | Inventory, tools, gathering, crafting | Item model + inventory, data-driven recipes, craft intent, tool-doubled gather, crafting UI | ✅ |
 | 6 | AI assistant dialogue/objective system | Objective/quest engine, scripted+contextual assistant lines, tutorial hooks | ⬜ |
 | 7 | NPC survivors: needs, relationships, tasks | NPC agents, utility-AI needs, relationship graph, schedules, task assignment | ⬜ |
 | 8 | Settlement construction + job assignment | Buildable structures, placement, jobs, production chains, settlement view | ⬜ |
