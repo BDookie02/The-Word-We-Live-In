@@ -1,0 +1,38 @@
+# ROADMAP.md — The World We Live In
+
+Phased build plan. Each phase is small enough to verify before moving on. Status legend:
+⬜ not started · 🔧 in progress · ✅ done · ⚠️ partial/stubbed.
+
+> Reality note: this is a deep simulation game. Early phases produce *real, runnable*
+> systems; the social/civilization depth (Phases 9–11) is built as extensible frameworks
+> that grow over many passes, not "finished" in one shot. We never label a stub as done.
+
+| # | Phase | Maps to (this stack) | Status |
+|---|-------|----------------------|--------|
+| 0 | Inspect workspace, choose stack | Done in C0 | ✅ |
+| 1 | Runnable project skeleton | Vite+React+TS, deterministic sim core, state bridge, ad-service abstraction, HUD | 🔧 |
+| 2 | Mobile input, camera, portrait/landscape | Touch/gesture layer, responsive layout, r3f camera rig | ⬜ |
+| 3 | Procedural low-poly planet prototype | Seeded planet gen (heightmap/biomes), chunked low-poly mesh in r3f | ⬜ |
+| 4 | Player movement + survival resource loop | Player entity, move intents, hunger/thirst/energy/temp needs, day/night | ⬜ |
+| 5 | Inventory, tools, gathering, crafting | Item/recipe data, inventory model, gather/craft systems + UI | ⬜ |
+| 6 | AI assistant dialogue/objective system | Objective/quest engine, scripted+contextual assistant lines, tutorial hooks | ⬜ |
+| 7 | NPC survivors: needs, relationships, tasks | NPC agents, utility-AI needs, relationship graph, schedules, task assignment | ⬜ |
+| 8 | Settlement construction + job assignment | Buildable structures, placement, jobs, production chains, settlement view | ⬜ |
+| 9 | Civilization progression eras | Era/tech model (primitive→modern→space), unlock gates, era transitions | ⬜ |
+| 10 | Emergent social systems | Groups, culture, values, governance, belief systems, laws, leadership — *fictional/emergent, data-driven* | ⬜ |
+| 11 | Enemies/threats + weapon/tool progression | Threat spawners, combat model, weapon/tool tech tiers | ⬜ |
+| 12 | Save/load | Versioned save schema, storage adapter (web localStorage / Capacitor), migrations | ⬜ |
+| 13 | Zoom scale layers | Character ↔ settlement ↔ planet ↔ orbit/galaxy LOD + camera transitions | ⬜ |
+| 14 | Multiplayer architecture interfaces | Net interfaces, command/snapshot protocol sketch — **offline-first, not implemented** | ⬜ |
+| 15 | Mobile UI polish + performance pass | Responsive HUD, touch targets, perf budget, frame profiling | ⬜ |
+| 16 | Android export/release docs | Capacitor Android, AdMob prod config, signing, Play listing checklist | ⬜ |
+
+## Cross-cutting (woven through phases, not separate)
+- **Monetization (AdMob):** abstraction in Phase 1; rewarded-ad hooks added as gameplay
+  rewards appear (Phases 5+); interstitials at era transitions (Phase 9); prod config Phase 16.
+- **Testing:** every phase adds Vitest coverage for new sim-core logic.
+- **Determinism:** sim core stays seed-deterministic so saves/replays/MP stay viable.
+
+## Quality bar per phase
+After each phase run: `npm run build` (type-check), `npm run test`, `npm run lint`.
+If a check can't run, document exactly what was not verified in CHECKPOINTS.md.
