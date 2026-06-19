@@ -1,4 +1,5 @@
 import { PLANET } from '../../config/gameConfig';
+import type { Vec2 } from '../core/types';
 import { biomeForHeight } from './biomes';
 import { createValueNoise, fbm } from './noise';
 
@@ -88,3 +89,28 @@ export function sampleHeight(data: TerrainData, wx: number, wz: number): number 
   const b = h01 + (h11 - h01) * tx;
   return a + (b - a) * tz;
 }
+
+/**
+ * Collect drinkable shoreline points (world coords) where the surface sits just above the
+ * water line. Sampled with a stride and capped, so NPCs have a small set of water targets to
+ * walk to without scanning the whole grid every tick. Pure.
+ */
+export function findShorePoints(data: TerrainData, drinkMargin: number, max = 24): Vec2[] {
+  const { size, worldSize, heights, waterLevel } = data;
+  const verts = size + 1;
+  const cell = worldSize / size;
+  const half = worldSize / 2;
+  const points: Vec2[] = [];
+  const stride = 2;
+
+  for (let j = 0; j <= size && points.length < max; j += stride) {
+    for (let i = 0; i <= size && points.length < max; i += stride) {
+      const h = heights[j * verts + i];
+      if (h > waterLevel && h <= waterLevel + drinkMargin) {
+        points.push({ x: -half + i * cell, y: -half + j * cell });
+      }
+    }
+  }
+  return points;
+}
+

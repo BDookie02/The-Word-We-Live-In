@@ -3,6 +3,7 @@ import { useGameStore } from '../state/store';
 import { useRewardedAd } from './useRewardedAd';
 import CraftingPanel from './CraftingPanel';
 import ObjectivesPanel from './ObjectivesPanel';
+import RosterPanel from './RosterPanel';
 import { ADS } from '../config/gameConfig';
 import { ITEM_ORDER, ITEMS, invCount, type NeedLevels } from '../sim';
 
@@ -42,6 +43,7 @@ export default function Hud() {
   const { watchForReward, adBusy } = useRewardedAd();
   const [craftOpen, setCraftOpen] = useState(false);
   const [tasksOpen, setTasksOpen] = useState(false);
+  const [rosterOpen, setRosterOpen] = useState(false);
   if (!snapshot) return null;
 
   const { player, inventory } = snapshot;
@@ -51,6 +53,7 @@ export default function Hud() {
   const owned = ITEM_ORDER.filter((id) => invCount(inventory, id) > 0);
   const latestMessage = snapshot.messages[snapshot.messages.length - 1];
   const openTasks = snapshot.objectives.filter((o) => !o.completed).length;
+  const recruited = snapshot.npcs.filter((n) => n.recruited).length;
 
   return (
     <div className="hud">
@@ -75,6 +78,7 @@ export default function Hud() {
 
       {craftOpen && <CraftingPanel onClose={() => setCraftOpen(false)} />}
       {tasksOpen && <ObjectivesPanel onClose={() => setTasksOpen(false)} />}
+      {rosterOpen && <RosterPanel onClose={() => setRosterOpen(false)} />}
 
       <footer className="hud__bar hud__bar--bottom">
         <div className="hud__inv">
@@ -101,6 +105,12 @@ export default function Hud() {
             title={player.nearWater ? 'Drink from the water' : 'Move to the shore to drink'}
           >
             💧 Drink
+          </button>
+          <button
+            className={`hud__btn ${rosterOpen ? 'hud__btn--active' : ''}`}
+            onClick={() => setRosterOpen((v) => !v)}
+          >
+            👥 People{recruited > 0 ? ` (${recruited})` : ''}
           </button>
           <button
             className={`hud__btn ${tasksOpen ? 'hud__btn--active' : ''}`}

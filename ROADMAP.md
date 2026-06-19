@@ -16,7 +16,7 @@ Phased build plan. Each phase is small enough to verify before moving on. Status
 | 4 | Player movement + survival resource loop | Tap-to-move (terrain-follow), needs (health/hunger/thirst/energy), eat/drink, collapse + ad-revive | ✅ |
 | 5 | Inventory, tools, gathering, crafting | Item model + inventory, data-driven recipes, craft intent, tool-doubled gather, crafting UI | ✅ |
 | 6 | AI assistant dialogue/objective system | Auto-tracked objective engine + rewards, scripted ARIA message feed (intro/warnings/completions), HUD banner + Tasks panel | ✅ |
-| 7 | NPC survivors: needs, relationships, tasks | NPC agents, utility-AI needs, relationship graph, schedules, task assignment | ⬜ |
+| 7 | NPC survivors: needs, relationships, tasks | NPC agents + utility AI (seek/task/wander), relationship/affinity graph, proximity recruit, assignable gather tasks, roster UI | ✅ |
 | 8 | Settlement construction + job assignment | Buildable structures, placement, jobs, production chains, settlement view | ⬜ |
 | 9 | Civilization progression eras | Era/tech model (primitive→modern→space), unlock gates, era transitions | ⬜ |
 | 10 | Emergent social systems | Groups, culture, values, governance, belief systems, laws, leadership — *fictional/emergent, data-driven* | ⬜ |

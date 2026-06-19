@@ -35,6 +35,19 @@ export {
   type PlayerStats,
 } from './objectives/objectives';
 export {
+  NPC_NAMES,
+  TASK_RESOURCE,
+  type NPC,
+  type NpcBehavior,
+  type NpcTaskKind,
+} from './npc/npc';
+export {
+  getAffinity,
+  relKey,
+  type RelationshipMap,
+} from './social/relationships';
+export type { NpcSnapshot } from './world/World';
+export {
   RESOURCE_KINDS,
   emptyTally,
   fullNeeds,

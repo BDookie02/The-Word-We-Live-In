@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { World } from './World';
-import { DEMO } from '../../config/gameConfig';
+import { DEMO, NPC_CFG } from '../../config/gameConfig';
 import { sampleHeight } from '../planet/Terrain';
 import { invAdd, invCount } from '../items/inventory';
 
@@ -184,5 +184,48 @@ describe('World objectives & assistant', () => {
     w.tick();
     w.tick();
     expect(invCount(w.inventory, 'food')).toBe(2); // still just one reward
+  });
+});
+
+describe('World NPCs & relationships', () => {
+  it('spawns the configured number of NPCs, all wild at first', () => {
+    const w = World.fromSeed(5);
+    expect(w.npcs).toHaveLength(NPC_CFG.count);
+    expect(w.npcs.every((n) => !n.recruited)).toBe(true);
+  });
+
+  it('recruits a nearby NPC but rejects a distant one', () => {
+    const w = World.fromSeed(5);
+    const npc = w.npcs[0];
+
+    npc.pos = { x: w.player.pos.x + 100, y: w.player.pos.y };
+    expect(w.dispatch({ type: 'recruitNpc', npcId: npc.id })).toBe(false);
+
+    npc.pos = { x: w.player.pos.x + 1, y: w.player.pos.y };
+    expect(w.dispatch({ type: 'recruitNpc', npcId: npc.id })).toBe(true);
+    expect(npc.recruited).toBe(true);
+    expect(w.relationships['npc-0|player'] ?? w.relationships['player|npc-0']).toBeGreaterThan(0);
+  });
+
+  it('assigns a task only to recruited NPCs', () => {
+    const w = World.fromSeed(5);
+    const npc = w.npcs[0];
+    expect(w.dispatch({ type: 'assignNpcTask', npcId: npc.id, task: 'gather_wood' })).toBe(false);
+    npc.recruited = true;
+    expect(w.dispatch({ type: 'assignNpcTask', npcId: npc.id, task: 'gather_wood' })).toBe(true);
+    expect(npc.task).toBe('gather_wood');
+  });
+
+  it('grows player affinity while an NPC stays near the player', () => {
+    const w = World.fromSeed(5);
+    const npc = w.npcs[0];
+    npc.pos = { x: w.player.pos.x, y: w.player.pos.y };
+    const before = w.snapshot().npcs.find((n) => n.id === npc.id)!.affinityWithPlayer;
+    for (let i = 0; i < 20; i++) {
+      npc.pos = { x: w.player.pos.x, y: w.player.pos.y }; // hold them adjacent
+      w.tick();
+    }
+    const after = w.snapshot().npcs.find((n) => n.id === npc.id)!.affinityWithPlayer;
+    expect(after).toBeGreaterThan(before);
   });
 });

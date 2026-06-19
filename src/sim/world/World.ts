@@ -1,13 +1,22 @@
-import { DEMO, SURVIVAL } from '../../config/gameConfig';
+import { DEMO, NPC_CFG, SURVIVAL } from '../../config/gameConfig';
 import { createRng, type RNG } from '../core/rng';
 import { SimClock, type CalendarTime } from '../core/SimClock';
-import { fullNeeds, type PlayerState, type ResourceKind, type ResourceNode } from '../core/types';
+import {
+  fullNeeds,
+  type PlayerState,
+  type ResourceKind,
+  type ResourceNode,
+  type Vec2,
+} from '../core/types';
 import type { Intent } from '../intents/intents';
 import { invAdd, invConsume, invCount, type Inventory } from '../items/inventory';
 import { TOOL_FOR_RESOURCE } from '../items/items';
 import { recipeById } from '../items/recipes';
 import { biomeForHeight } from '../planet/biomes';
-import { generateTerrain, sampleHeight, type TerrainData } from '../planet/Terrain';
+import { findShorePoints, generateTerrain, sampleHeight, type TerrainData } from '../planet/Terrain';
+import { NPC_NAMES, type NPC } from '../npc/npc';
+import { stepNpc } from '../npc/npcAI';
+import { addAffinity, getAffinity, type RelationshipMap } from '../social/relationships';
 import { stepMovement } from '../systems/movement';
 import { clamp01to100, stepSurvival } from '../systems/survival';
 import {
@@ -24,6 +33,9 @@ import type { ItemId } from '../items/items';
 /** Player view in a snapshot: full state plus a derived `nearWater` flag for the UI. */
 export type PlayerSnapshot = PlayerState & { nearWater: boolean };
 
+/** NPC view in a snapshot: full state plus derived affinity with the player. */
+export type NpcSnapshot = NPC & { affinityWithPlayer: number };
+
 /**
  * Read-only, structured-clone-safe view of the world for the UI/renderer to consume.
  * The UI must never receive a live reference to internal mutable state — always a snapshot.
@@ -36,6 +48,7 @@ export interface WorldSnapshot {
   time: CalendarTime;
   isNight: boolean;
   player: PlayerSnapshot;
+  npcs: NpcSnapshot[];
   nodes: ResourceNode[];
   inventory: Inventory;
   objectives: ObjectiveProgress[];
@@ -64,9 +77,13 @@ export class World {
   readonly clock: SimClock;
   readonly terrain: TerrainData;
   player: PlayerState;
+  npcs: NPC[];
   nodes: ResourceNode[];
   inventory: Inventory;
   stats: PlayerStats;
+  relationships: RelationshipMap = {};
+  private shorePoints: Vec2[] = [];
+  private npcRng: RNG;
   /** Set of completed objective ids (latched). */
   private completed: Record<string, boolean> = {};
   private messages: AssistantMessage[] = [];
@@ -89,10 +106,39 @@ export class World {
       status: 'alive',
     };
     this.nodes = this.generateNodes();
+    this.shorePoints = findShorePoints(this.terrain, SURVIVAL.drinkMaxHeightAboveWater);
+    this.npcRng = this.rng.fork(0x2);
+    this.npcs = this.generateNpcs();
 
     // The AI assistant's opening guidance (scripted, no LLM).
     this.pushMessage('ARIA: Systems online. We crash-landed on an unknown world.');
     this.pushMessage('ARIA: Tap the ground to move, tap resources to gather. Start with wood.');
+    this.pushMessage('ARIA: I detect other survivors nearby. Approach one and recruit them.');
+  }
+
+  /** Spawn wandering survivors on land near the crash site. */
+  private generateNpcs(): NPC[] {
+    const npcs: NPC[] = [];
+    const r = this.rng.fork(0x3);
+    const { waterLevel } = this.terrain;
+    let tries = 0;
+    while (npcs.length < NPC_CFG.count && tries < NPC_CFG.count * 40) {
+      tries++;
+      const x = r.range(-NPC_CFG.spawnRadius, NPC_CFG.spawnRadius);
+      const z = r.range(-NPC_CFG.spawnRadius, NPC_CFG.spawnRadius);
+      if (sampleHeight(this.terrain, x, z) <= waterLevel + 0.5) continue;
+      npcs.push({
+        id: `npc-${npcs.length}`,
+        name: NPC_NAMES[npcs.length % NPC_NAMES.length],
+        pos: { x, y: z },
+        target: null,
+        needs: fullNeeds(),
+        behavior: 'wander',
+        task: null,
+        recruited: false,
+      });
+    }
+    return npcs;
   }
 
   static fromSeed(seed: number): World {
@@ -201,6 +247,27 @@ export class World {
         return true;
       }
 
+      case 'recruitNpc': {
+        if (!alive) return false;
+        const npc = this.npcs.find((n) => n.id === intent.npcId);
+        if (!npc || npc.recruited) return false;
+        const dx = npc.pos.x - this.player.pos.x;
+        const dy = npc.pos.y - this.player.pos.y;
+        if (Math.hypot(dx, dy) > NPC_CFG.recruitRadius) return false;
+        npc.recruited = true;
+        addAffinity(this.relationships, 'player', npc.id, NPC_CFG.recruitAffinityBonus);
+        this.pushMessage(`ARIA: ${npc.name} joined your group.`);
+        return true;
+      }
+
+      case 'assignNpcTask': {
+        const npc = this.npcs.find((n) => n.id === intent.npcId);
+        if (!npc || !npc.recruited) return false;
+        npc.task = intent.task;
+        npc.target = null;
+        return true;
+      }
+
       case 'revive': {
         if (this.player.status !== 'collapsed') return false;
         this.player.status = 'alive';
@@ -268,6 +335,52 @@ export class World {
     }
   }
 
+  /** Advance every NPC one tick: behaviour, needs decay, and any node interaction. */
+  private updateNpcs(): void {
+    const ctx = {
+      terrain: this.terrain,
+      nodes: this.nodes,
+      shorePoints: this.shorePoints,
+      rng: this.npcRng,
+    };
+    for (const npc of this.npcs) {
+      const res = stepNpc(npc, ctx);
+      stepSurvival(npc.needs, res.moving); // NPCs weaken but don't permanently die in Phase 7
+      if (res.harvestNodeId) {
+        const node = this.nodes.find((n) => n.id === res.harvestNodeId);
+        if (node) {
+          node.amount -= 1;
+          if (res.creditKind) invAdd(this.inventory, res.creditKind, 1);
+          if (node.amount <= 0) {
+            const idx = this.nodes.indexOf(node);
+            if (idx >= 0) this.nodes.splice(idx, 1);
+          }
+        }
+      }
+    }
+  }
+
+  /** Grow affinity between entities that spend time near each other. */
+  private updateRelationships(): void {
+    const r2 = NPC_CFG.proximityRadius * NPC_CFG.proximityRadius;
+    const within = (a: Vec2, b: Vec2) => {
+      const dx = a.x - b.x;
+      const dy = a.y - b.y;
+      return dx * dx + dy * dy <= r2;
+    };
+    for (let i = 0; i < this.npcs.length; i++) {
+      const ni = this.npcs[i];
+      if (within(ni.pos, this.player.pos)) {
+        addAffinity(this.relationships, 'player', ni.id, NPC_CFG.affinityPerTick);
+      }
+      for (let j = i + 1; j < this.npcs.length; j++) {
+        if (within(ni.pos, this.npcs[j].pos)) {
+          addAffinity(this.relationships, ni.id, this.npcs[j].id, NPC_CFG.affinityPerTick);
+        }
+      }
+    }
+  }
+
   /** Advance exactly one fixed simulation step. */
   tick(): void {
     if (this.player.status === 'alive') {
@@ -280,6 +393,8 @@ export class World {
       }
       this.checkNeedWarnings();
     }
+    this.updateNpcs();
+    this.updateRelationships();
     this.evaluateObjectives();
     this.clock.step();
   }
@@ -299,6 +414,13 @@ export class World {
         status: p.status,
         nearWater: this.isNearWater(),
       },
+      npcs: this.npcs.map((n) => ({
+        ...n,
+        pos: { ...n.pos },
+        target: n.target ? { ...n.target } : null,
+        needs: { ...n.needs },
+        affinityWithPlayer: getAffinity(this.relationships, 'player', n.id),
+      })),
       nodes: this.nodes.map((n) => ({ ...n, pos: { ...n.pos } })),
       inventory: { ...this.inventory },
       objectives: objectiveProgress(this.objectiveContext(), this.completed),

@@ -4,6 +4,39 @@ Append-only checkpoint log. Newest at top. Each entry = a verifiable save point.
 
 ---
 
+## C7 — Phase 7 complete & verified — 2026-06-18
+**Phase:** 7 (NPC survivors: needs, relationships, tasks) — ✅ done
+**What was built:**
+- Config `NPC_CFG` (count, speed, seek thresholds, restores, wander, proximity/affinity, recruit).
+- `src/sim/npc/npc.ts`: `NPC` type, `NpcBehavior`, `NpcTaskKind` + `TASK_RESOURCE`, names.
+- `src/sim/npc/npcAI.ts`: pure `stepNpc` utility-AI (priority thirst > hunger > task > wander),
+  movement, arrival effects (drink at shore / eat a food node / harvest a task node). Tested.
+- `src/sim/social/relationships.ts`: pairwise affinity map (`relKey/getAffinity/addAffinity`). Tested.
+- `src/sim/planet/Terrain.ts`: `findShorePoints` (drinkable water targets for NPCs).
+- `World`: spawns NPCs near the crash site; per-tick `updateNpcs` (behaviour + needs decay +
+  node harvest → stockpile or self-feed) and `updateRelationships` (proximity affinity, incl.
+  player); `recruitNpc` (proximity-gated, +affinity, assistant line) and `assignNpcTask` intents;
+  snapshot now carries `npcs` (with `affinityWithPlayer`).
+- Render `NpcMeshes` (capsules, green=recruited/amber=wild, tap-to-recruit). UI `RosterPanel`
+  (People button) with status/affinity + task-assignment tags.
+
+**Files changed:** ~src/config/gameConfig.ts, +src/sim/npc/{npc,npcAI}.ts (+ npcAI test),
++src/sim/social/relationships.ts (+ test), ~src/sim/planet/Terrain.ts, ~src/sim/intents/intents.ts,
+~src/sim/world/World.ts (+ tests), ~src/sim/index.ts, +src/render/NpcMeshes.tsx,
+~src/render/WorldScene.tsx, +src/ui/RosterPanel.tsx, ~src/ui/Hud.tsx, ~src/index.css.
+**What works:** NPCs wander/seek/self-sustain; recruit by proximity; assigned NPCs gather into
+the stockpile; affinity grows by proximity; roster + 3D rendering.
+**What is stubbed (honest):** NPCs weaken but don't permanently die yet; no daily schedules
+(behaviour is needs-driven, not clock-driven); affinity not yet surfaced into social groups
+(Phase 10); no buildings/jobs (Phase 8); AdMob seam + seed-only save still pending.
+**What failed:** one unused-import build/lint error (NpcTaskKind in World.ts) — removed.
+**Validation run:** `npm run test` → 78/78 pass · `npm run build` → tsc + vite OK (1.01 MB / 282 KB
+gz; chunk-size warning noted) · `npm run lint` → clean · **runtime:** app boots clean (no console
+errors). Preview **screenshot** tool still timing out since C5 (environment) — verified via console.
+**Next exact task:** Phase 8 — building model + `placeBuilding` intent + construction/jobs
+(builder + farm production), 3D structures + build menu/tap-to-place.
+**Git:** committed on `main`, pushed to origin.
+
 ## C6 — Phase 6 complete & verified — 2026-06-18
 **Phase:** 6 (AI assistant dialogue/objective system) — ✅ done
 **What was built:**

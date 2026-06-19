@@ -2,9 +2,9 @@
 
 > Living status document. Updated at every checkpoint. Read this first when resuming.
 
-**Last updated:** 2026-06-18 (Checkpoint C6 — Phase 6 complete & verified)
-**Current phase:** Phase 6 done ✅ → next: Phase 7 (NPC survivors: needs, relationships, tasks)
-**Overall status:** 🟢 Healthy. No drift. Build/test/lint green; app boots clean (preview screenshot tool still timing out — verified via console + 66 tests).
+**Last updated:** 2026-06-18 (Checkpoint C7 — Phase 7 complete & verified)
+**Current phase:** Phase 7 done ✅ → next: Phase 8 (settlement construction + job assignment)
+**Overall status:** 🟢 Healthy. No drift. Build/test/lint green; app boots clean (preview screenshot tool still timing out — verified via console + 78 tests).
 
 ---
 
@@ -51,12 +51,17 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
   milestones) that complete against world state each tick, grant one-time rewards, and are
   announced by the scripted "ARIA" assistant. HUD has an assistant banner (latest message) and
   a Tasks panel (progress bars). Assistant also gives intro guidance + low-need warnings.
+- **NPC survivors:** ~4 NPCs with needs + a utility-AI loop (seek water/food, do assigned task,
+  else wander), self-sustaining at shorelines/food nodes. A relationship graph grows affinity
+  from proximity. Walk near + tap an NPC to recruit; recruited NPCs accept a gather task that
+  deposits resources into the shared stockpile. NPCs render in 3D (green=recruited, amber=wild);
+  a People/roster panel shows status, affinity, and task assignment.
 - **Mobile camera/input:** touch-friendly camera rig (drag-pan + pinch-zoom via drei
   MapControls); tap a resource node to gather, tap ground to move.
 - HUD overlay (clock, needs, inventory, actions, crafting panel) adapts to portrait/landscape.
 - **Monetization** verified at runtime earlier: "Watch ad" → MockAdService → +10 wood;
   revive flow uses the `reward_revive` placement.
-- `npm run test` (66 passing), `npm run build` (tsc + vite; ~1.0 MB JS / 280 KB gz — three.js
+- `npm run test` (78 passing), `npm run build` (tsc + vite; ~1.01 MB JS / 282 KB gz — three.js
   is heavy, code-splitting deferred to Phase 15), `npm run lint` (clean) — all green.
 
 ## Built so far
@@ -69,8 +74,9 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 | 4 Player movement + survival loop | ✅ done | Tap-to-move (terrain-follow); pure needs system (health/hunger/thirst/energy) + eat/drink; collapse + ad-revive; HUD needs bars. Build/test/lint green + runtime-verified. |
 | 5 Inventory, tools, gathering, crafting | ✅ done | Item model + inventory; data-driven recipes; craft intent; tool-doubled gather; HUD inventory + crafting panel. Build/test/lint green; app boots clean. |
 | 6 AI assistant dialogue/objectives | ✅ done | Auto-tracked objective system + rewards; scripted ARIA message feed (intro/warnings/completions); HUD assistant banner + Tasks panel. Build/test/lint green; app boots clean. |
-| 7 NPC survivors: needs, relationships, tasks | ⬜ next | See ROADMAP.md |
-| 8–16 | ⬜ not started | See ROADMAP.md |
+| 7 NPC survivors: needs, relationships, tasks | ✅ done | NPC agents + utility AI; relationship/affinity graph; recruit (proximity) + assignable gather tasks → stockpile; NPC rendering + roster panel. Build/test/lint green; app boots clean. |
+| 8 Settlement construction + job assignment | ⬜ next | See ROADMAP.md |
+| 9–16 | ⬜ not started | See ROADMAP.md |
 
 ## What is stubbed (and honestly NOT finished)
 - AdService: real AdMob impl deferred; **MockAdService** used in dev/web.
@@ -82,17 +88,17 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 - None yet. (Android build blocked until JDK 17 installed — not needed before Phase 16.)
 
 ## Next exact task
-Phase 7 — NPC survivors: needs, relationships, tasks. Add NPC agents in the sim core: each with
-needs (reuse NeedLevels), a position with movement, a simple utility-AI behaviour loop (seek
-food/water/idle), and a daily schedule. Add a relationship graph (player↔NPC, NPC↔NPC affinity)
-that shifts from proximity/interactions. Allow recruiting/assigning a simple task (e.g. "gather
-wood here"). Render NPCs in the scene; surface a roster in the HUD. Keep all NPC logic pure +
-unit-tested in the sim core (deterministic).
+Phase 8 — settlement construction + job assignment. Add a building model in the sim core
+(data-driven structure defs with build costs; e.g. campfire, shelter/hut, storage, farm plot),
+a `placeBuilding` intent (consumes stockpile resources, sites a structure on the terrain), and
+construction state (built vs in-progress). Add "jobs" tied to buildings (e.g. assign an NPC to a
+farm → produces food over time; builder NPC completes in-progress structures). Render structures
+in 3D and add a build menu + tap-to-place. Keep building/job rules pure + unit-tested.
 
-Known tunables to revisit: day length ~3 min real/day (TICKS_PER_HOUR=150). Survival/craft
-balance first-pass. Terrain is a single mesh (chunking/LOD = Phase 13). Bundle code-splitting =
-Phase 15. NOTE: the preview **screenshot** tool has been timing out since C5 (environment, not
-the app) — verify via `preview_console_logs` + tests until it recovers.
+Known tunables to revisit: day length ~3 min real/day (TICKS_PER_HOUR=150). Survival/craft/NPC
+balance first-pass. NPCs don't permanently die yet. Terrain is a single mesh (chunking/LOD =
+Phase 13). Bundle code-splitting = Phase 15. NOTE: the preview **screenshot** tool has been
+timing out since C5 (environment, not the app) — verify via `preview_console_logs` + tests.
 
 ## Current architecture assumptions
 - Sim core is deterministic and renderer-agnostic; UI never mutates world directly — it

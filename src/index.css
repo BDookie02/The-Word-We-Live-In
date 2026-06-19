@@ -304,6 +304,102 @@ body {
   opacity: 0.8;
 }
 
+/* ---- roster / people panel ---- */
+.roster {
+  pointer-events: auto;
+  position: absolute;
+  left: 0.9rem;
+  bottom: 5.5rem;
+  width: min(88vw, 340px);
+  max-height: 58vh;
+  overflow-y: auto;
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 0.6rem 0.7rem;
+}
+
+.roster__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.roster__head small {
+  opacity: 0.6;
+  font-weight: 400;
+}
+
+.roster__close {
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.roster__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.person {
+  padding: 0.45rem 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.person__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.person__name {
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.person__meta {
+  font-size: 0.72rem;
+  opacity: 0.8;
+  text-align: right;
+}
+
+.person__hint {
+  margin-top: 0.3rem;
+  font-size: 0.74rem;
+  opacity: 0.6;
+}
+
+.person__tasks {
+  margin-top: 0.4rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.tag {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.74rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.tag--on {
+  border-color: var(--accent-2);
+  background: rgba(123, 216, 143, 0.22);
+}
+
 /* ---- survival needs ---- */
 .hud__needs {
   pointer-events: none;

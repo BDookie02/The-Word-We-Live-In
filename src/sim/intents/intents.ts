@@ -1,4 +1,5 @@
 import type { EntityId, ResourceKind } from '../core/types';
+import type { NpcTaskKind } from '../npc/npc';
 
 /**
  * Intents are the ONLY way to mutate the world. Input/UI produce intents; the World
@@ -18,6 +19,10 @@ export type Intent =
   | { type: 'drink' }
   /** Craft a recipe by id, consuming its inputs. */
   | { type: 'craft'; recipeId: string }
+  /** Recruit a nearby NPC into the player's group. */
+  | { type: 'recruitNpc'; npcId: EntityId }
+  /** Assign (or clear, with null) a task for a recruited NPC. */
+  | { type: 'assignNpcTask'; npcId: EntityId; task: NpcTaskKind | null }
   /** Recover from a collapse — used by the rewarded-ad "revive" reward flow. */
   | { type: 'revive' };
 

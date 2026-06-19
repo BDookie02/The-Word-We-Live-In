@@ -2,6 +2,7 @@ import type { ThreeEvent } from '@react-three/fiber';
 import { useGameStore } from '../state/store';
 import { sampleHeight } from '../sim';
 import { computeLighting, dayFractionFromTime } from './dayNight';
+import NpcMeshes from './NpcMeshes';
 import ResourceNodeMesh from './ResourceNodeMesh';
 import TerrainMesh from './TerrainMesh';
 
@@ -73,6 +74,8 @@ export default function WorldScene() {
           onGather={(id) => dispatch({ type: 'gather', nodeId: id })}
         />
       ))}
+
+      <NpcMeshes />
     </>
   );
 }

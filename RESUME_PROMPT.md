@@ -44,15 +44,16 @@ WORKING RULES (checkpoint protocol):
   push unless a remote is configured — ask the user for GitHub access if needed).
 
 CURRENT POSITION (update this each checkpoint):
-- Last checkpoint: C6 — Phase 6 complete & verified (build/test/lint green; 66 tests passing;
+- Last checkpoint: C7 — Phase 7 complete & verified (build/test/lint green; 78 tests passing;
   app boots clean). NOTE: the preview screenshot tool has been timing out since C5 (environment,
   not the app) — verify via preview_console_logs + tests until it recovers.
-- Next exact task: Phase 7 (NPC survivors: needs, relationships, tasks) — add NPC agents in the
-  sim core (needs via NeedLevels, position + movement, a simple utility-AI behaviour loop
-  seek-food/water/idle, a basic daily schedule), a relationship graph (player↔NPC and NPC↔NPC
-  affinity shifting from proximity/interaction), and recruit/assign-a-task. Render NPCs in the
-  r3f scene and add a roster to the HUD. Keep all NPC logic pure and unit-tested in src/sim
-  (deterministic); UI/render read snapshots and dispatch intents only.
+- Next exact task: Phase 8 (settlement construction + job assignment) — add a data-driven
+  building model in the sim core (structure defs + build costs: campfire, hut/shelter, storage,
+  farm plot), a `placeBuilding` intent (consumes the shared stockpile, sites a structure on the
+  terrain, tracks built vs in-progress), and jobs tied to buildings (builder NPC completes
+  in-progress structures; farm assignment produces food over time). Render structures in the r3f
+  scene + a build menu with tap-to-place. Keep building/job rules pure and unit-tested in
+  src/sim; UI/render read snapshots and dispatch intents only.
 
 GIT REMOTE STATUS: origin configured + main pushed ->
 https://github.com/BDookie02/The-Word-We-Live-In.git (Git Credential Manager handles auth).

@@ -46,6 +46,27 @@ export const SURVIVAL = {
   reviveLevel: 60, // needs/health restored to this on revive
 } as const;
 
+// NPC survivors (Phase 7). All per-tick rates; deterministic behaviour.
+export const NPC_CFG = {
+  count: 4,
+  moveSpeed: 7, // world units / second (a touch slower than the player)
+  arriveRadius: 1.2,
+  spawnRadius: 20, // NPCs spawn within this radius of the crash site (origin)
+
+  seekThirstBelow: 35,
+  seekHungerBelow: 35,
+  drinkRestore: 45,
+  eatRestore: 40,
+
+  wanderChance: 0.012, // per-tick chance to pick a new wander destination
+  wanderRadius: 14,
+
+  proximityRadius: 10, // affinity grows between entities within this distance
+  affinityPerTick: 0.02,
+  recruitRadius: 7, // player must be this close to recruit an NPC
+  recruitAffinityBonus: 20,
+} as const;
+
 // Procedural terrain (Phase 3). gridSize cells per side -> (gridSize+1)^2 vertices.
 export const PLANET = {
   gridSize: 64,
