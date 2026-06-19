@@ -1,4 +1,5 @@
-import { DEMO, NPC_CFG, SURVIVAL } from '../../config/gameConfig';
+import { BUILD, DEMO, NPC_CFG, SURVIVAL } from '../../config/gameConfig';
+import { BUILDINGS, type Building } from '../buildings/buildings';
 import { createRng, type RNG } from '../core/rng';
 import { SimClock, type CalendarTime } from '../core/SimClock';
 import {
@@ -50,6 +51,7 @@ export interface WorldSnapshot {
   player: PlayerSnapshot;
   npcs: NpcSnapshot[];
   nodes: ResourceNode[];
+  buildings: Building[];
   inventory: Inventory;
   objectives: ObjectiveProgress[];
   messages: AssistantMessage[];
@@ -79,11 +81,13 @@ export class World {
   player: PlayerState;
   npcs: NPC[];
   nodes: ResourceNode[];
+  buildings: Building[] = [];
   inventory: Inventory;
   stats: PlayerStats;
   relationships: RelationshipMap = {};
   private shorePoints: Vec2[] = [];
   private npcRng: RNG;
+  private nextBuildingId = 0;
   /** Set of completed objective ids (latched). */
   private completed: Record<string, boolean> = {};
   private messages: AssistantMessage[] = [];
@@ -247,6 +251,30 @@ export class World {
         return true;
       }
 
+      case 'placeBuilding': {
+        if (!alive) return false;
+        const def = BUILDINGS[intent.kind];
+        if (!invConsume(this.inventory, def.cost)) return false;
+        this.buildings.push({
+          id: `b-${this.nextBuildingId++}`,
+          kind: intent.kind,
+          pos: { x: intent.x, y: intent.y },
+          progress: 0,
+          built: false,
+          produce: 0,
+        });
+        this.pushMessage(`ARIA: ${def.name} site marked. Assign a builder, or tap it to build.`);
+        return true;
+      }
+
+      case 'workBuilding': {
+        if (!alive) return false;
+        const b = this.buildings.find((x) => x.id === intent.buildingId);
+        if (!b || b.built) return false;
+        this.addBuildProgress(b, BUILD.playerWorkPerTap);
+        return true;
+      }
+
       case 'recruitNpc': {
         if (!alive) return false;
         const npc = this.npcs.find((n) => n.id === intent.npcId);
@@ -335,11 +363,52 @@ export class World {
     }
   }
 
+  private addBuildProgress(b: Building, work: number): void {
+    if (b.built) return;
+    b.progress += work;
+    const def = BUILDINGS[b.kind];
+    if (b.progress >= def.buildWork) {
+      b.progress = def.buildWork;
+      b.built = true;
+      this.pushMessage(`ARIA: ${def.name} construction complete.`);
+    }
+  }
+
+  /** Builders advance nearby in-progress sites; tended farms produce food into the stockpile. */
+  private updateBuildings(): void {
+    const r2 = BUILD.workRadius * BUILD.workRadius;
+    const near = (a: Vec2, b: Vec2) => {
+      const dx = a.x - b.x;
+      const dy = a.y - b.y;
+      return dx * dx + dy * dy <= r2;
+    };
+    for (const npc of this.npcs) {
+      if (!npc.recruited || !npc.task) continue;
+      if (npc.task === 'build') {
+        const site = this.buildings.find((b) => !b.built && near(npc.pos, b.pos));
+        if (site) this.addBuildProgress(site, BUILD.workPerTick);
+      } else if (npc.task === 'farm') {
+        const farm = this.buildings.find(
+          (b) => b.kind === 'farm' && b.built && near(npc.pos, b.pos),
+        );
+        if (farm) {
+          farm.produce += BUILD.farmFoodPerTick;
+          if (farm.produce >= 1) {
+            const whole = Math.floor(farm.produce);
+            farm.produce -= whole;
+            invAdd(this.inventory, 'food', whole);
+          }
+        }
+      }
+    }
+  }
+
   /** Advance every NPC one tick: behaviour, needs decay, and any node interaction. */
   private updateNpcs(): void {
     const ctx = {
       terrain: this.terrain,
       nodes: this.nodes,
+      buildings: this.buildings,
       shorePoints: this.shorePoints,
       rng: this.npcRng,
     };
@@ -394,6 +463,7 @@ export class World {
       this.checkNeedWarnings();
     }
     this.updateNpcs();
+    this.updateBuildings();
     this.updateRelationships();
     this.evaluateObjectives();
     this.clock.step();
@@ -422,6 +492,7 @@ export class World {
         affinityWithPlayer: getAffinity(this.relationships, 'player', n.id),
       })),
       nodes: this.nodes.map((n) => ({ ...n, pos: { ...n.pos } })),
+      buildings: this.buildings.map((b) => ({ ...b, pos: { ...b.pos } })),
       inventory: { ...this.inventory },
       objectives: objectiveProgress(this.objectiveContext(), this.completed),
       messages: this.messages.map((m) => ({ ...m })),

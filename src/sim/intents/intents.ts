@@ -1,3 +1,4 @@
+import type { BuildingKind } from '../buildings/buildings';
 import type { EntityId, ResourceKind } from '../core/types';
 import type { NpcTaskKind } from '../npc/npc';
 
@@ -23,6 +24,10 @@ export type Intent =
   | { type: 'recruitNpc'; npcId: EntityId }
   /** Assign (or clear, with null) a task for a recruited NPC. */
   | { type: 'assignNpcTask'; npcId: EntityId; task: NpcTaskKind | null }
+  /** Place a building site (consumes its cost from the stockpile). */
+  | { type: 'placeBuilding'; kind: BuildingKind; x: number; y: number }
+  /** Player taps an in-progress building to add construction work. */
+  | { type: 'workBuilding'; buildingId: EntityId }
   /** Recover from a collapse — used by the rewarded-ad "revive" reward flow. */
   | { type: 'revive' };
 

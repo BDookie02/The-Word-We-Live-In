@@ -4,6 +4,41 @@ Append-only checkpoint log. Newest at top. Each entry = a verifiable save point.
 
 ---
 
+## C8 — Phase 8 complete & verified — 2026-06-18
+**Phase:** 8 (settlement construction + job assignment) — ✅ done
+**What was built:**
+- Config `BUILD` (build/farm rates, work radius, player tap work).
+- `src/sim/buildings/buildings.ts`: `BuildingKind`, data-driven `BUILDINGS` defs (campfire, hut,
+  storage, farm) with costs + buildWork, `BUILDING_ORDER`, `Building` instance type.
+- NPC tasks extended: `GatherTask` + `'build'` + `'farm'`; `isGatherTask` guard. `npcAI` targets
+  in-progress sites (build) / built farms (farm).
+- Intents: `placeBuilding` (consumes stockpile, sites structure), `workBuilding` (player tap work).
+- `World`: `buildings` list + `nextBuildingId`; `addBuildProgress` (completes + announces);
+  `updateBuildings` per-tick pass (builder NPCs advance nearby sites; farmers produce food into
+  the stockpile via a fractional accumulator); buildings ctx passed to NPC AI; snapshot carries
+  `buildings`.
+- State: `placement` (pending building kind). Render `BuildingMeshes` (per-kind shapes,
+  translucent ring while in progress, tap to add work); `WorldScene` ground tap places when in
+  placement mode else moves. UI `BuildMenu` (Build button, costs/affordability, place/cancel);
+  roster gains Build/Farm task tags.
+
+**Files changed:** ~src/config/gameConfig.ts, +src/sim/buildings/buildings.ts, ~src/sim/npc/npc.ts,
+~src/sim/npc/npcAI.ts (+ test ctx), ~src/sim/intents/intents.ts, ~src/sim/world/World.ts (+ tests),
+~src/sim/index.ts, ~src/state/store.ts, +src/render/BuildingMeshes.tsx, ~src/render/WorldScene.tsx,
++src/ui/BuildMenu.tsx, ~src/ui/Hud.tsx, ~src/ui/RosterPanel.tsx, ~src/index.css.
+**What works:** place buildings (cost-gated), build via NPC or taps, farm food production, 3D
+structures + build menu; all prior systems intact.
+**What is stubbed (honest):** building effects are minimal (campfire/hut/storage are cosmetic so
+far — housing caps/morale come later); no eras/tech gating yet (Phase 9); AdMob seam + seed-only
+save still pending; balance first-pass.
+**What failed:** one test type error (npcAI test ctx missing `buildings`) — added.
+**Validation run:** `npm run test` → 83/83 pass · `npm run build` → tsc + vite OK (1.02 MB / 283 KB
+gz; chunk-size warning noted) · `npm run lint` → clean · **runtime:** app boots clean (no console
+errors). Preview **screenshot** tool still timing out since C5 (environment) — verified via console.
+**Next exact task:** Phase 9 — era/tech progression model with unlock gates, era-gated
+recipes/buildings, HUD era display, `era_transition` interstitial-ad hook.
+**Git:** committed on `main`, pushed to origin.
+
 ## C7 — Phase 7 complete & verified — 2026-06-18
 **Phase:** 7 (NPC survivors: needs, relationships, tasks) — ✅ done
 **What was built:**

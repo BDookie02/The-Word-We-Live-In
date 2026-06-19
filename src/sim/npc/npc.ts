@@ -2,15 +2,22 @@ import type { NeedLevels, ResourceKind, Vec2, EntityId } from '../core/types';
 
 export type NpcBehavior = 'idle' | 'wander' | 'seekWater' | 'seekFood' | 'task';
 
-/** Tasks a recruited NPC can be assigned (gather a resource into the shared stockpile). */
-export type NpcTaskKind = 'gather_wood' | 'gather_stone' | 'gather_food' | 'gather_fiber';
+/** Gather tasks deposit a resource into the shared stockpile. */
+export type GatherTask = 'gather_wood' | 'gather_stone' | 'gather_food' | 'gather_fiber';
 
-export const TASK_RESOURCE: Record<NpcTaskKind, ResourceKind> = {
+/** All tasks a recruited NPC can be assigned. */
+export type NpcTaskKind = GatherTask | 'build' | 'farm';
+
+export const TASK_RESOURCE: Record<GatherTask, ResourceKind> = {
   gather_wood: 'wood',
   gather_stone: 'stone',
   gather_food: 'food',
   gather_fiber: 'fiber',
 };
+
+export function isGatherTask(task: NpcTaskKind): task is GatherTask {
+  return task in TASK_RESOURCE;
+}
 
 export interface NPC {
   id: EntityId;

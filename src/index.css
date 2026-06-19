@@ -304,6 +304,96 @@ body {
   opacity: 0.8;
 }
 
+/* ---- build menu ---- */
+.build {
+  pointer-events: auto;
+  position: absolute;
+  right: 0.9rem;
+  bottom: 5.5rem;
+  width: min(88vw, 340px);
+  max-height: 58vh;
+  overflow-y: auto;
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 0.6rem 0.7rem;
+}
+
+.build__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.build__close {
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.build__hint {
+  font-size: 0.76rem;
+  color: var(--accent);
+  margin-bottom: 0.45rem;
+}
+
+.build__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.build-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.build-item__main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+}
+
+.build-item__cost {
+  display: flex;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  opacity: 0.9;
+}
+
+.build-item__btn {
+  border: 1px solid var(--accent);
+  background: rgba(79, 195, 247, 0.16);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.8rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 999px;
+  min-height: 40px;
+  cursor: pointer;
+}
+
+.build-item__btn--on {
+  border-color: var(--accent-2);
+  background: rgba(123, 216, 143, 0.25);
+}
+
+.build-item__btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 /* ---- roster / people panel ---- */
 .roster {
   pointer-events: auto;

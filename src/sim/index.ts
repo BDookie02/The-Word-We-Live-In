@@ -37,10 +37,19 @@ export {
 export {
   NPC_NAMES,
   TASK_RESOURCE,
+  isGatherTask,
+  type GatherTask,
   type NPC,
   type NpcBehavior,
   type NpcTaskKind,
 } from './npc/npc';
+export {
+  BUILDINGS,
+  BUILDING_ORDER,
+  type Building,
+  type BuildingDef,
+  type BuildingKind,
+} from './buildings/buildings';
 export {
   getAffinity,
   relKey,

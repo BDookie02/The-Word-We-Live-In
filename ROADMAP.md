@@ -17,7 +17,7 @@ Phased build plan. Each phase is small enough to verify before moving on. Status
 | 5 | Inventory, tools, gathering, crafting | Item model + inventory, data-driven recipes, craft intent, tool-doubled gather, crafting UI | ✅ |
 | 6 | AI assistant dialogue/objective system | Auto-tracked objective engine + rewards, scripted ARIA message feed (intro/warnings/completions), HUD banner + Tasks panel | ✅ |
 | 7 | NPC survivors: needs, relationships, tasks | NPC agents + utility AI (seek/task/wander), relationship/affinity graph, proximity recruit, assignable gather tasks, roster UI | ✅ |
-| 8 | Settlement construction + job assignment | Buildable structures, placement, jobs, production chains, settlement view | ⬜ |
+| 8 | Settlement construction + job assignment | Data-driven buildings, placeBuilding (tap-to-place + cost), construction via builders/player, farm food jobs, 3D structures + build menu | ✅ |
 | 9 | Civilization progression eras | Era/tech model (primitive→modern→space), unlock gates, era transitions | ⬜ |
 | 10 | Emergent social systems | Groups, culture, values, governance, belief systems, laws, leadership — *fictional/emergent, data-driven* | ⬜ |
 | 11 | Enemies/threats + weapon/tool progression | Threat spawners, combat model, weapon/tool tech tiers | ⬜ |

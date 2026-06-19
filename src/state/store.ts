@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Intent, TerrainData, WorldSnapshot } from '../sim';
+import type { BuildingKind, Intent, TerrainData, WorldSnapshot } from '../sim';
 
 /**
  * Bridge between the deterministic sim core and React. The GameLoop writes the latest
@@ -14,11 +14,14 @@ interface GameStore {
   dispatch: (intent: Intent) => void;
   /** True while a rewarded ad is in flight (drives UI busy state). */
   adBusy: boolean;
+  /** Building kind pending placement (next ground tap sites it), or null. */
+  placement: BuildingKind | null;
 
   setSnapshot: (snapshot: WorldSnapshot) => void;
   setTerrain: (terrain: TerrainData) => void;
   setDispatch: (dispatch: (intent: Intent) => void) => void;
   setAdBusy: (busy: boolean) => void;
+  setPlacement: (placement: BuildingKind | null) => void;
 }
 
 export const useGameStore = create<GameStore>((set) => ({
@@ -28,9 +31,11 @@ export const useGameStore = create<GameStore>((set) => ({
     /* replaced by GameLoop.start() */
   },
   adBusy: false,
+  placement: null,
 
   setSnapshot: (snapshot) => set({ snapshot }),
   setTerrain: (terrain) => set({ terrain }),
   setDispatch: (dispatch) => set({ dispatch }),
   setAdBusy: (adBusy) => set({ adBusy }),
+  setPlacement: (placement) => set({ placement }),
 }));

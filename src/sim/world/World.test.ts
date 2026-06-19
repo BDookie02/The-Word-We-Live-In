@@ -3,6 +3,7 @@ import { World } from './World';
 import { DEMO, NPC_CFG } from '../../config/gameConfig';
 import { sampleHeight } from '../planet/Terrain';
 import { invAdd, invCount } from '../items/inventory';
+import { BUILDINGS } from '../buildings/buildings';
 
 describe('World', () => {
   it('generates identical worlds from the same seed', () => {
@@ -227,5 +228,66 @@ describe('World NPCs & relationships', () => {
     }
     const after = w.snapshot().npcs.find((n) => n.id === npc.id)!.affinityWithPlayer;
     expect(after).toBeGreaterThan(before);
+  });
+});
+
+describe('World buildings & jobs', () => {
+  it('places a building, consuming its cost from the stockpile', () => {
+    const w = World.fromSeed(5);
+    invAdd(w.inventory, 'wood', 5);
+    const ok = w.dispatch({ type: 'placeBuilding', kind: 'campfire', x: 2, y: 2 });
+    expect(ok).toBe(true);
+    expect(invCount(w.inventory, 'wood')).toBe(5 - BUILDINGS.campfire.cost.wood!);
+    expect(w.buildings).toHaveLength(1);
+    expect(w.buildings[0].built).toBe(false);
+  });
+
+  it('refuses to place a building the player cannot afford', () => {
+    const w = World.fromSeed(5);
+    expect(w.dispatch({ type: 'placeBuilding', kind: 'hut', x: 0, y: 0 })).toBe(false);
+    expect(w.buildings).toHaveLength(0);
+  });
+
+  it('completes construction via player taps', () => {
+    const w = World.fromSeed(5);
+    invAdd(w.inventory, 'wood', 3);
+    w.dispatch({ type: 'placeBuilding', kind: 'campfire', x: 0, y: 0 });
+    const id = w.buildings[0].id;
+    for (let i = 0; i < 4; i++) w.dispatch({ type: 'workBuilding', buildingId: id });
+    expect(w.buildings[0].built).toBe(true);
+  });
+
+  it('a builder NPC completes a nearby in-progress site', () => {
+    const w = World.fromSeed(5);
+    invAdd(w.inventory, 'wood', 3);
+    w.dispatch({ type: 'placeBuilding', kind: 'campfire', x: 5, y: 5 });
+    const npc = w.npcs[0];
+    npc.recruited = true;
+    npc.task = 'build';
+    npc.pos = { x: 5, y: 5 };
+    for (let i = 0; i < 80 && !w.buildings[0].built; i++) {
+      npc.pos = { x: 5, y: 5 }; // keep the builder on-site
+      w.tick();
+    }
+    expect(w.buildings[0].built).toBe(true);
+  });
+
+  it('a farmer NPC at a built farm produces food', () => {
+    const w = World.fromSeed(5);
+    invAdd(w.inventory, 'wood', 2);
+    invAdd(w.inventory, 'fiber', 2);
+    w.dispatch({ type: 'placeBuilding', kind: 'farm', x: -6, y: 4 });
+    const farm = w.buildings[0];
+    farm.built = true;
+    farm.progress = BUILDINGS.farm.buildWork;
+    const npc = w.npcs[0];
+    npc.recruited = true;
+    npc.task = 'farm';
+    const foodBefore = invCount(w.inventory, 'food');
+    for (let i = 0; i < 60; i++) {
+      npc.pos = { x: -6, y: 4 }; // keep the farmer tending the plot
+      w.tick();
+    }
+    expect(invCount(w.inventory, 'food')).toBeGreaterThan(foodBefore);
   });
 });

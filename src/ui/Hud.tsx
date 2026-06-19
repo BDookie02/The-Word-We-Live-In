@@ -4,6 +4,7 @@ import { useRewardedAd } from './useRewardedAd';
 import CraftingPanel from './CraftingPanel';
 import ObjectivesPanel from './ObjectivesPanel';
 import RosterPanel from './RosterPanel';
+import BuildMenu from './BuildMenu';
 import { ADS } from '../config/gameConfig';
 import { ITEM_ORDER, ITEMS, invCount, type NeedLevels } from '../sim';
 
@@ -44,6 +45,7 @@ export default function Hud() {
   const [craftOpen, setCraftOpen] = useState(false);
   const [tasksOpen, setTasksOpen] = useState(false);
   const [rosterOpen, setRosterOpen] = useState(false);
+  const [buildOpen, setBuildOpen] = useState(false);
   if (!snapshot) return null;
 
   const { player, inventory } = snapshot;
@@ -79,6 +81,7 @@ export default function Hud() {
       {craftOpen && <CraftingPanel onClose={() => setCraftOpen(false)} />}
       {tasksOpen && <ObjectivesPanel onClose={() => setTasksOpen(false)} />}
       {rosterOpen && <RosterPanel onClose={() => setRosterOpen(false)} />}
+      {buildOpen && <BuildMenu onClose={() => setBuildOpen(false)} />}
 
       <footer className="hud__bar hud__bar--bottom">
         <div className="hud__inv">
@@ -124,6 +127,13 @@ export default function Hud() {
             onClick={() => setCraftOpen((v) => !v)}
           >
             🔨 Craft
+          </button>
+          <button
+            className={`hud__btn ${buildOpen ? 'hud__btn--active' : ''}`}
+            disabled={!alive}
+            onClick={() => setBuildOpen((v) => !v)}
+          >
+            🏗️ Build
           </button>
           <button
             className="hud__btn hud__btn--ad"

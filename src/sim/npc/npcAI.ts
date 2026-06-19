@@ -1,14 +1,16 @@
 import { NPC_CFG, TICK_MS } from '../../config/gameConfig';
+import type { Building } from '../buildings/buildings';
 import type { RNG } from '../core/rng';
 import type { EntityId, ResourceKind, ResourceNode, Vec2 } from '../core/types';
 import type { TerrainData } from '../planet/Terrain';
-import { TASK_RESOURCE, type NPC } from './npc';
+import { isGatherTask, TASK_RESOURCE, type NPC } from './npc';
 
 const SPEED_PER_TICK = NPC_CFG.moveSpeed * (TICK_MS / 1000);
 
 export interface NpcStepCtx {
   terrain: TerrainData;
   nodes: readonly ResourceNode[];
+  buildings: readonly Building[];
   shorePoints: readonly Vec2[];
   rng: RNG;
 }
@@ -88,13 +90,30 @@ export function stepNpc(npc: NPC, ctx: NpcStepCtx): NpcStepResult {
     npc.target = nearest(npc.pos, foodNodes)?.pos ?? npc.target;
   } else if (npc.recruited && npc.task) {
     npc.behavior = 'task';
-    const want = TASK_RESOURCE[npc.task];
-    const node = nearest(
-      npc.pos,
-      ctx.nodes.filter((n) => n.kind === want),
-    );
-    npc.target = node ? node.pos : null;
-    if (!node) npc.behavior = 'idle';
+    if (isGatherTask(npc.task)) {
+      const want = TASK_RESOURCE[npc.task];
+      const node = nearest(
+        npc.pos,
+        ctx.nodes.filter((n) => n.kind === want),
+      );
+      npc.target = node ? node.pos : null;
+      if (!node) npc.behavior = 'idle';
+    } else if (npc.task === 'build') {
+      const site = nearest(
+        npc.pos,
+        ctx.buildings.filter((b) => !b.built),
+      );
+      npc.target = site ? site.pos : null;
+      if (!site) npc.behavior = 'idle';
+    } else {
+      // 'farm'
+      const farm = nearest(
+        npc.pos,
+        ctx.buildings.filter((b) => b.kind === 'farm' && b.built),
+      );
+      npc.target = farm ? farm.pos : null;
+      if (!farm) npc.behavior = 'idle';
+    }
   } else {
     npc.behavior = 'wander';
     if (!npc.target && ctx.rng.next() < NPC_CFG.wanderChance) {
@@ -119,7 +138,7 @@ export function stepNpc(npc: NPC, ctx: NpcStepCtx): NpcStepResult {
         result.harvestNodeId = node.id; // NPC eats it (no stockpile credit)
       }
       npc.target = null;
-    } else if (npc.behavior === 'task' && npc.task) {
+    } else if (npc.behavior === 'task' && npc.task && isGatherTask(npc.task)) {
       const want = TASK_RESOURCE[npc.task];
       const node = nearest(
         npc.pos,

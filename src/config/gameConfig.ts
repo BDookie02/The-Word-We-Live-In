@@ -46,6 +46,14 @@ export const SURVIVAL = {
   reviveLevel: 60, // needs/health restored to this on revive
 } as const;
 
+// Settlement construction + jobs (Phase 8). Per-tick rates.
+export const BUILD = {
+  workPerTick: 0.18, // a builder NPC's progress contribution per tick when adjacent
+  playerWorkPerTap: 3, // progress added when the player taps an in-progress building
+  farmFoodPerTick: 0.04, // food produced per tick by a tended (built) farm
+  workRadius: 3.5, // how close an NPC must be to a building to work/tend it
+} as const;
+
 // NPC survivors (Phase 7). All per-tick rates; deterministic behaviour.
 export const NPC_CFG = {
   count: 4,

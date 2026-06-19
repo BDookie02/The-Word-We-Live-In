@@ -22,7 +22,14 @@ function mkNpc(over: Partial<NPC> = {}): NPC {
 }
 
 function ctx(over: Partial<NpcStepCtx> = {}): NpcStepCtx {
-  return { terrain, nodes: [], shorePoints: [{ x: 5, y: 0 }], rng: createRng(1), ...over };
+  return {
+    terrain,
+    nodes: [],
+    buildings: [],
+    shorePoints: [{ x: 5, y: 0 }],
+    rng: createRng(1),
+    ...over,
+  };
 }
 
 function stepUntilArrived(npc: NPC, c: NpcStepCtx) {

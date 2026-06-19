@@ -2,6 +2,7 @@ import type { ThreeEvent } from '@react-three/fiber';
 import { useGameStore } from '../state/store';
 import { sampleHeight } from '../sim';
 import { computeLighting, dayFractionFromTime } from './dayNight';
+import BuildingMeshes from './BuildingMeshes';
 import NpcMeshes from './NpcMeshes';
 import ResourceNodeMesh from './ResourceNodeMesh';
 import TerrainMesh from './TerrainMesh';
@@ -16,6 +17,8 @@ export default function WorldScene() {
   const snapshot = useGameStore((s) => s.snapshot);
   const terrain = useGameStore((s) => s.terrain);
   const dispatch = useGameStore((s) => s.dispatch);
+  const placement = useGameStore((s) => s.placement);
+  const setPlacement = useGameStore((s) => s.setPlacement);
   if (!snapshot || !terrain) return null;
 
   const { player } = snapshot;
@@ -24,7 +27,12 @@ export default function WorldScene() {
 
   const handleGroundTap = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
-    dispatch({ type: 'moveTo', x: e.point.x, y: e.point.z });
+    if (placement) {
+      dispatch({ type: 'placeBuilding', kind: placement, x: e.point.x, y: e.point.z });
+      setPlacement(null);
+    } else {
+      dispatch({ type: 'moveTo', x: e.point.x, y: e.point.z });
+    }
   };
 
   return (
@@ -75,6 +83,7 @@ export default function WorldScene() {
         />
       ))}
 
+      <BuildingMeshes />
       <NpcMeshes />
     </>
   );
