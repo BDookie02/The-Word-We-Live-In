@@ -6,6 +6,7 @@ import ObjectivesPanel from './ObjectivesPanel';
 import RosterPanel from './RosterPanel';
 import BuildMenu from './BuildMenu';
 import EraPanel from './EraPanel';
+import SocietyPanel from './SocietyPanel';
 import { ADS } from '../config/gameConfig';
 import { ITEM_ORDER, ITEMS, invCount, type NeedLevels } from '../sim';
 
@@ -48,6 +49,7 @@ export default function Hud() {
   const [rosterOpen, setRosterOpen] = useState(false);
   const [buildOpen, setBuildOpen] = useState(false);
   const [eraOpen, setEraOpen] = useState(false);
+  const [societyOpen, setSocietyOpen] = useState(false);
   if (!snapshot) return null;
 
   const { player, inventory } = snapshot;
@@ -89,6 +91,7 @@ export default function Hud() {
       {rosterOpen && <RosterPanel onClose={() => setRosterOpen(false)} />}
       {buildOpen && <BuildMenu onClose={() => setBuildOpen(false)} />}
       {eraOpen && <EraPanel onClose={() => setEraOpen(false)} />}
+      {societyOpen && <SocietyPanel onClose={() => setSocietyOpen(false)} />}
 
       <footer className="hud__bar hud__bar--bottom">
         <div className="hud__inv">
@@ -141,6 +144,12 @@ export default function Hud() {
             onClick={() => setBuildOpen((v) => !v)}
           >
             🏗️ Build
+          </button>
+          <button
+            className={`hud__btn ${societyOpen ? 'hud__btn--active' : ''}`}
+            onClick={() => setSocietyOpen((v) => !v)}
+          >
+            🌐 Society{snapshot.society.groups.length > 0 ? ` (${snapshot.society.groups.length})` : ''}
           </button>
           <button
             className={`hud__btn ${eraOpen ? 'hud__btn--active' : ''} ${snapshot.canAdvanceEra ? 'hud__btn--alert' : ''}`}

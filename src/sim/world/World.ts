@@ -1,5 +1,7 @@
-import { BUILD, DEMO, NPC_CFG, SURVIVAL } from '../../config/gameConfig';
+import { BUILD, DEMO, NPC_CFG, SOCIAL, SURVIVAL } from '../../config/gameConfig';
 import { BUILDINGS, type Building } from '../buildings/buildings';
+import { deriveSociety, type Society } from '../social/society';
+import { driftToward, randomValues } from '../social/values';
 import {
   canAdvanceEra,
   eraDef,
@@ -68,6 +70,7 @@ export interface WorldSnapshot {
   nextEra: string | null;
   eraRequirements: EraRequirement[] | null;
   canAdvanceEra: boolean;
+  society: Society;
 }
 
 const MAX_MESSAGES = 8;
@@ -99,6 +102,7 @@ export class World {
   stats: PlayerStats;
   relationships: RelationshipMap = {};
   era = 0; // civilization era index
+  private society: Society = { groups: [], relations: [] };
   private shorePoints: Vec2[] = [];
   private npcRng: RNG;
   private nextBuildingId = 0;
@@ -154,6 +158,7 @@ export class World {
         behavior: 'wander',
         task: null,
         recruited: false,
+        values: randomValues(r),
       });
     }
     return npcs;
@@ -472,6 +477,25 @@ export class World {
     }
   }
 
+  /**
+   * Re-derive the emergent society (groups, leaders, tenets, relations) from recruited NPCs'
+   * affinity + values, then drift each grouped member's values toward their group mean (cultural
+   * convergence). Runs on an interval rather than every tick.
+   */
+  private updateSociety(): void {
+    const members = this.npcs
+      .filter((n) => n.recruited)
+      .map((n) => ({ id: n.id, name: n.name, values: n.values }));
+    this.society = deriveSociety(members, this.relationships);
+
+    for (const group of this.society.groups) {
+      for (const id of group.memberIds) {
+        const npc = this.npcs.find((n) => n.id === id);
+        if (npc) npc.values = driftToward(npc.values, group.values, SOCIAL.driftRate);
+      }
+    }
+  }
+
   /** Grow affinity between entities that spend time near each other. */
   private updateRelationships(): void {
     const r2 = NPC_CFG.proximityRadius * NPC_CFG.proximityRadius;
@@ -508,6 +532,7 @@ export class World {
     this.updateNpcs();
     this.updateBuildings();
     this.updateRelationships();
+    if (this.clock.tick % SOCIAL.recomputeTicks === 0) this.updateSociety();
     this.evaluateObjectives();
     this.clock.step();
   }
@@ -543,6 +568,15 @@ export class World {
       nextEra: this.era < MAX_ERA_INDEX ? eraDef(this.era + 1).name : null,
       eraRequirements: nextEraRequirements(this.era, this.eraContext()),
       canAdvanceEra: canAdvanceEra(this.era, this.eraContext()),
+      society: {
+        groups: this.society.groups.map((g) => ({
+          ...g,
+          memberIds: [...g.memberIds],
+          values: { ...g.values },
+          tenets: { ...g.tenets },
+        })),
+        relations: this.society.relations.map((r) => ({ ...r })),
+      },
     };
   }
 }

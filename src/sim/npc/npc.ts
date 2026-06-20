@@ -1,4 +1,5 @@
 import type { NeedLevels, ResourceKind, Vec2, EntityId } from '../core/types';
+import type { ValueAxes } from '../social/values';
 
 export type NpcBehavior = 'idle' | 'wander' | 'seekWater' | 'seekFood' | 'task';
 
@@ -29,6 +30,8 @@ export interface NPC {
   /** Assigned task (recruited NPCs only), or null. */
   task: NpcTaskKind | null;
   recruited: boolean;
+  /** Abstract value axes that drive emergent culture/beliefs (Phase 10). */
+  values: ValueAxes;
 }
 
 export const NPC_NAMES: readonly string[] = [

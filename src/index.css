@@ -568,6 +568,97 @@ body {
   box-shadow: 0 0 0 1px rgba(255, 211, 77, 0.5);
 }
 
+/* ---- society panel ---- */
+.society {
+  pointer-events: auto;
+  position: absolute;
+  left: 0.9rem;
+  bottom: 5.5rem;
+  width: min(90vw, 360px);
+  max-height: 60vh;
+  overflow-y: auto;
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 0.6rem 0.7rem;
+}
+
+.society__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.society__close {
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.society__empty {
+  font-size: 0.82rem;
+  opacity: 0.7;
+  line-height: 1.4;
+}
+
+.society__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.grp {
+  padding: 0.5rem 0.55rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.grp__name {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.grp__meta {
+  font-size: 0.76rem;
+  opacity: 0.85;
+  margin-top: 0.1rem;
+}
+
+.grp__members {
+  font-size: 0.74rem;
+  opacity: 0.6;
+  margin-top: 0.1rem;
+}
+
+.grp__tenets {
+  margin: 0.4rem 0 0;
+  padding-left: 1rem;
+  font-size: 0.78rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.society__relations {
+  margin-top: 0.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.rel {
+  font-size: 0.78rem;
+  opacity: 0.85;
+  padding: 0.3rem 0.45rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+}
+
 /* ---- era panel ---- */
 .era {
   pointer-events: auto;

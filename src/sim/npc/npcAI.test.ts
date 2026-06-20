@@ -17,6 +17,7 @@ function mkNpc(over: Partial<NPC> = {}): NPC {
     behavior: 'wander',
     task: null,
     recruited: false,
+    values: { tradition: 0, community: 0, harmony: 0 },
     ...over,
   };
 }

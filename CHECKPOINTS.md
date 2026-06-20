@@ -4,6 +4,38 @@ Append-only checkpoint log. Newest at top. Each entry = a verifiable save point.
 
 ---
 
+## C10 — Phase 10 complete & verified — 2026-06-18
+**Phase:** 10 (emergent social systems) — ✅ done. Fictional/abstract; NO real religions/parties.
+**What was built:**
+- Config `SOCIAL` (recompute interval, group threshold, drift rate, ally/rival distances).
+- `src/sim/social/values.ts`: abstract `ValueAxes` (tradition/community/harmony) + `randomValues`,
+  `driftToward`, `meanValues`, `valueDistance`. Tested.
+- `src/sim/social/society.ts`: `deriveSociety` — union-find clustering of members by affinity ≥
+  threshold into groups (size ≥ 2); most-connected member = leader; mean values → fictional
+  culture/belief/law `tenetsFor`; seeded fictional group names; inter-group stance (ally/neutral/
+  rival) from value distance. Pure + deterministic. Tested.
+- NPC gains `values` (seeded at spawn). `World`: cached `society`, recomputed every
+  `SOCIAL.recomputeTicks`; grouped members' values drift toward the group mean (convergence);
+  snapshot carries a deep-copied `society`.
+- UI: `SocietyPanel` (groups, leader, members, tenets, relations) + HUD 🌐 Society button.
+
+**Files changed:** ~src/config/gameConfig.ts, +src/sim/social/{values,society}.ts (+ tests),
+~src/sim/npc/npc.ts, ~src/sim/npc/npcAI.test.ts, ~src/sim/world/World.ts (+ tests),
+~src/sim/index.ts, +src/ui/SocietyPanel.tsx, ~src/ui/Hud.tsx, ~src/index.css.
+**What works:** recruited survivors who bond cluster into named groups with leaders + emergent
+tenets; groups with opposing values become rivals; values converge within a group over time.
+**What is stubbed (honest):** groups are NPC-only (player is settlement founder, not a group
+member); organic affinity growth is slow at the default threshold (assigning NPCs together speeds
+it); no governance *actions* yet (laws are descriptive tenets, not enforced mechanics) — deeper
+politics/law enforcement is a later extension; AdMob seam + seed-only save still pending.
+**What failed:** nothing.
+**Validation run:** `npm run test` → 103/103 pass · `npm run build` → tsc + vite OK (1.02 MB /
+286 KB gz; chunk-size warning noted) · `npm run lint` → clean · **runtime:** app boots clean (no
+console errors). Preview **screenshot** tool still timing out since C5 (environment) — via console.
+**Next exact task:** Phase 11 — enemies/threats (seeded spawns, contact damage) + combat/weapon
+progression (era-tied), 3D threats, threat alerts, optional ad defense hook.
+**Git:** committed on `main`, pushed to origin.
+
 ## C9 — Phase 9 complete & verified — 2026-06-18
 **Phase:** 9 (civilization progression eras) — ✅ done
 **What was built:**

@@ -46,6 +46,15 @@ export const SURVIVAL = {
   reviveLevel: 60, // needs/health restored to this on revive
 } as const;
 
+// Emergent social systems (Phase 10). Fictional/abstract, deterministic.
+export const SOCIAL = {
+  recomputeTicks: 40, // re-derive society every N ticks (~2s)
+  groupAffinityThreshold: 8, // affinity weight that counts as a social tie (edge)
+  driftRate: 0.05, // value convergence toward the group mean per recompute
+  allyDistance: 1.5, // value distance below which two groups are allied
+  rivalDistance: 3.5, // value distance above which two groups are rivals
+} as const;
+
 // Settlement construction + jobs (Phase 8). Per-tick rates.
 export const BUILD = {
   workPerTick: 0.18, // a builder NPC's progress contribution per tick when adjacent

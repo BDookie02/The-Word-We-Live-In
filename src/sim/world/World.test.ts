@@ -341,3 +341,27 @@ describe('World civilization eras', () => {
     expect(w.era).toBe(0);
   });
 });
+
+describe('World emergent society', () => {
+  it('forms a social group from recruited, strongly-affined survivors', () => {
+    const w = World.fromSeed(5);
+    w.npcs[0].recruited = true;
+    w.npcs[1].recruited = true;
+    w.relationships['npc-0|npc-1'] = 50; // strong mutual tie
+    w.tick(); // society recomputes on a tick that is a multiple of the interval (tick 0)
+    const snap = w.snapshot();
+    expect(snap.society.groups.length).toBeGreaterThanOrEqual(1);
+    const group = snap.society.groups.find(
+      (g) => g.memberIds.includes('npc-0') && g.memberIds.includes('npc-1'),
+    );
+    expect(group).toBeDefined();
+    expect(group!.name.length).toBeGreaterThan(0);
+    expect(group!.tenets.culture.length).toBeGreaterThan(0);
+    expect(group!.leaderId).toMatch(/npc-/);
+  });
+
+  it('has no groups before survivors bond', () => {
+    const snap = World.fromSeed(5).snapshot();
+    expect(snap.society.groups).toHaveLength(0);
+  });
+});

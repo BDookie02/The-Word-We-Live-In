@@ -2,9 +2,9 @@
 
 > Living status document. Updated at every checkpoint. Read this first when resuming.
 
-**Last updated:** 2026-06-18 (Checkpoint C9 — Phase 9 complete & verified)
-**Current phase:** Phase 9 done ✅ → next: Phase 10 (emergent social systems — groups, culture, governance, beliefs, laws)
-**Overall status:** 🟢 Healthy. No drift. Build/test/lint green; app boots clean (preview screenshot tool still timing out — verified via console + 92 tests).
+**Last updated:** 2026-06-18 (Checkpoint C10 — Phase 10 complete & verified)
+**Current phase:** Phase 10 done ✅ → next: Phase 11 (enemies/threats + weapon/tool progression)
+**Overall status:** 🟢 Healthy. No drift. Build/test/lint green; app boots clean (preview screenshot tool still timing out — verified via console + 103 tests).
 
 ---
 
@@ -65,12 +65,18 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
   milestones) and is player-triggered via an Era panel (`advanceEra`), playing an interstitial
   ad at the transition (`era_transition`). Higher eras boost farm output. HUD shows the current
   era + an alert when advancement is available; craft/build menus show 🔒 locks.
+- **Emergent society (fictional/abstract):** NPCs have drifting value axes (tradition/community/
+  harmony). Social **groups emerge** from the affinity graph (union-find clustering of recruited
+  survivors), each electing a **leader**, averaging values into fictional **culture/belief/law
+  tenets**, and getting a seeded fictional name. Inter-group **stance** (ally/neutral/rival)
+  comes from value distance; members' values converge toward their group over time. A Society
+  panel shows groups, leaders, members, tenets, and rivalries. (No real religions/parties.)
 - **Mobile camera/input:** touch-friendly camera rig (drag-pan + pinch-zoom via drei
   MapControls); tap a resource node to gather, tap ground to move.
 - HUD overlay (clock, needs, inventory, actions, crafting panel) adapts to portrait/landscape.
 - **Monetization** verified at runtime earlier: "Watch ad" → MockAdService → +10 wood;
   revive flow uses the `reward_revive` placement.
-- `npm run test` (92 passing), `npm run build` (tsc + vite; ~1.02 MB JS / 284 KB gz — three.js
+- `npm run test` (103 passing), `npm run build` (tsc + vite; ~1.02 MB JS / 286 KB gz — three.js
   is heavy, code-splitting deferred to Phase 15), `npm run lint` (clean) — all green.
 
 ## Built so far
@@ -86,8 +92,9 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 | 7 NPC survivors: needs, relationships, tasks | ✅ done | NPC agents + utility AI; relationship/affinity graph; recruit (proximity) + assignable gather tasks → stockpile; NPC rendering + roster panel. Build/test/lint green; app boots clean. |
 | 8 Settlement construction + job assignment | ✅ done | Data-driven buildings; placeBuilding (tap-to-place, consumes stockpile); construction via builders + player taps; farm food jobs; 3D structures + build menu. Build/test/lint green; app boots clean. |
 | 9 Civilization progression eras | ✅ done | Era chain + unlock gates (minEra recipes/buildings); advanceEra requirements + Era panel; era_transition ad hook; farm output scales with era. Build/test/lint green; app boots clean. |
-| 10 Emergent social systems | ⬜ next | See ROADMAP.md |
-| 11–16 | ⬜ not started | See ROADMAP.md |
+| 10 Emergent social systems | ✅ done | Value axes; affinity-clustered groups; leaders; fictional culture/belief/law tenets + names; ally/rival relations; value drift; Society panel. Build/test/lint green; app boots clean. |
+| 11 Enemies/threats + weapon progression | ⬜ next | See ROADMAP.md |
+| 12–16 | ⬜ not started | See ROADMAP.md |
 
 ## What is stubbed (and honestly NOT finished)
 - AdService: real AdMob impl deferred; **MockAdService** used in dev/web.
@@ -99,19 +106,19 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 - None yet. (Android build blocked until JDK 17 installed — not needed before Phase 16.)
 
 ## Next exact task
-Phase 10 — emergent social systems (groups, culture, politics, beliefs, laws, leadership). Build
-a data-driven, FICTIONAL/abstract framework in the sim core (NOT hard-coded real religions or
-parties): derive social groups/factions from the existing relationship-affinity graph (cluster
-NPCs by mutual affinity); give NPCs simple value axes (e.g. tradition↔progress, individual↔
-collective) that drift; emerge a leader per group (highest affinity/standing); generate culture/
-belief/law "tenets" from group values + settlement history; track inter-group relations
-(cooperation/rivalry). Surface a Society panel in the HUD (groups, leaders, tenets, tensions).
-Keep all of it pure + unit-tested and deterministic.
+Phase 11 — enemies/threats + weapon/tool progression. Add hostile entities in the sim core
+(e.g. predators/raiders) that spawn over time (more at night / higher eras), move toward the
+player or settlement, and deal damage on contact (drains health). Add a combat model: equip a
+weapon (spear, etc.) for attack power; the player (and maybe guard-tasked NPCs) can fight back;
+threats can be defeated for loot. Tie weapon strength to era/tech. Render threats in 3D; HUD
+shows threat alerts. Consider a rewarded-ad "shield/defense" hook. Keep combat + spawning pure,
+deterministic (seeded), and unit-tested.
 
-Known tunables to revisit: day length ~3 min real/day (TICKS_PER_HOUR=150). Balance first-pass.
-NPCs don't permanently die yet; eras 2–3 add few unlocks so far (extend later). Terrain is a
-single mesh (chunking/LOD = Phase 13). Bundle code-splitting = Phase 15. NOTE: preview
-**screenshot** tool has been timing out since C5 (environment) — verify via console + tests.
+Known tunables to revisit: day length ~3 min real/day (TICKS_PER_HOUR=150). Balance first-pass;
+group-affinity threshold (8) means organic grouping is slow — assigning NPCs to the same
+job/building speeds bonding. NPCs don't permanently die yet; eras 2–3 add little new content.
+Terrain is a single mesh (chunking/LOD = Phase 13). Bundle code-splitting = Phase 15. NOTE:
+preview **screenshot** tool has been timing out since C5 (environment) — verify via console + tests.
 
 ## Current architecture assumptions
 - Sim core is deterministic and renderer-agnostic; UI never mutates world directly — it

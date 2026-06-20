@@ -65,6 +65,24 @@ export {
   relKey,
   type RelationshipMap,
 } from './social/relationships';
+export {
+  driftToward,
+  meanValues,
+  randomValues,
+  valueDistance,
+  VALUE_AXES,
+  type ValueAxes,
+} from './social/values';
+export {
+  deriveSociety,
+  tenetsFor,
+  type GroupRelation,
+  type GroupStance,
+  type GroupTenets,
+  type SocialGroup,
+  type SocialMember,
+  type Society,
+} from './social/society';
 export type { NpcSnapshot } from './world/World';
 export {
   RESOURCE_KINDS,
