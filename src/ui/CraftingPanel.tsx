@@ -1,5 +1,5 @@
 import { useGameStore } from '../state/store';
-import { invCount, invHas, ITEMS, RECIPES, type ItemId } from '../sim';
+import { eraDef, invCount, invHas, ITEMS, RECIPES, type ItemId } from '../sim';
 
 /**
  * Crafting panel. Lists data-driven recipes, shows their inputs (highlighting any the player
@@ -8,6 +8,7 @@ import { invCount, invHas, ITEMS, RECIPES, type ItemId } from '../sim';
  */
 export default function CraftingPanel({ onClose }: { onClose: () => void }) {
   const inventory = useGameStore((s) => s.snapshot?.inventory ?? {});
+  const eraIndex = useGameStore((s) => s.snapshot?.era.index ?? 0);
   const dispatch = useGameStore((s) => s.dispatch);
 
   return (
@@ -20,8 +21,9 @@ export default function CraftingPanel({ onClose }: { onClose: () => void }) {
       </div>
       <div className="craft__list">
         {RECIPES.map((recipe) => {
+          const locked = recipe.minEra > eraIndex;
           const hasTool = !recipe.requiresTool || invCount(inventory, recipe.requiresTool) >= 1;
-          const canCraft = hasTool && invHas(inventory, recipe.inputs);
+          const canCraft = !locked && hasTool && invHas(inventory, recipe.inputs);
           return (
             <div key={recipe.id} className="recipe">
               <div className="recipe__main">
@@ -44,8 +46,9 @@ export default function CraftingPanel({ onClose }: { onClose: () => void }) {
                 className="recipe__btn"
                 disabled={!canCraft}
                 onClick={() => dispatch({ type: 'craft', recipeId: recipe.id })}
+                title={locked ? `Unlocks in the ${eraDef(recipe.minEra).name} era` : undefined}
               >
-                Craft
+                {locked ? `🔒 ${eraDef(recipe.minEra).name}` : 'Craft'}
               </button>
             </div>
           );

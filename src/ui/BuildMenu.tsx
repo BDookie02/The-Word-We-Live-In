@@ -1,5 +1,5 @@
 import { useGameStore } from '../state/store';
-import { BUILDING_ORDER, BUILDINGS, invHas, ITEMS, type ItemId } from '../sim';
+import { BUILDING_ORDER, BUILDINGS, eraDef, invHas, ITEMS, type ItemId } from '../sim';
 
 /**
  * Build menu. Selecting a building enters placement mode (the next ground tap sites it).
@@ -7,6 +7,7 @@ import { BUILDING_ORDER, BUILDINGS, invHas, ITEMS, type ItemId } from '../sim';
  */
 export default function BuildMenu({ onClose }: { onClose: () => void }) {
   const inventory = useGameStore((s) => s.snapshot?.inventory ?? {});
+  const eraIndex = useGameStore((s) => s.snapshot?.era.index ?? 0);
   const placement = useGameStore((s) => s.placement);
   const setPlacement = useGameStore((s) => s.setPlacement);
 
@@ -22,7 +23,8 @@ export default function BuildMenu({ onClose }: { onClose: () => void }) {
       <div className="build__list">
         {BUILDING_ORDER.map((kind) => {
           const def = BUILDINGS[kind];
-          const affordable = invHas(inventory, def.cost);
+          const locked = def.minEra > eraIndex;
+          const affordable = !locked && invHas(inventory, def.cost);
           const active = placement === kind;
           return (
             <div key={kind} className="build-item">
@@ -46,8 +48,9 @@ export default function BuildMenu({ onClose }: { onClose: () => void }) {
                 className={`build-item__btn ${active ? 'build-item__btn--on' : ''}`}
                 disabled={!affordable}
                 onClick={() => setPlacement(active ? null : kind)}
+                title={locked ? `Unlocks in the ${eraDef(def.minEra).name} era` : undefined}
               >
-                {active ? 'Cancel' : 'Place'}
+                {locked ? `🔒 ${eraDef(def.minEra).name}` : active ? 'Cancel' : 'Place'}
               </button>
             </div>
           );

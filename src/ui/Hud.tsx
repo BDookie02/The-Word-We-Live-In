@@ -5,6 +5,7 @@ import CraftingPanel from './CraftingPanel';
 import ObjectivesPanel from './ObjectivesPanel';
 import RosterPanel from './RosterPanel';
 import BuildMenu from './BuildMenu';
+import EraPanel from './EraPanel';
 import { ADS } from '../config/gameConfig';
 import { ITEM_ORDER, ITEMS, invCount, type NeedLevels } from '../sim';
 
@@ -46,6 +47,7 @@ export default function Hud() {
   const [tasksOpen, setTasksOpen] = useState(false);
   const [rosterOpen, setRosterOpen] = useState(false);
   const [buildOpen, setBuildOpen] = useState(false);
+  const [eraOpen, setEraOpen] = useState(false);
   if (!snapshot) return null;
 
   const { player, inventory } = snapshot;
@@ -61,6 +63,10 @@ export default function Hud() {
     <div className="hud">
       <header className="hud__bar hud__bar--top">
         <span className="hud__title">The World We Live In</span>
+        <span className="hud__era" title="Civilization era">
+          🏛️ {snapshot.era.name}
+          {snapshot.canAdvanceEra ? ' ⬆' : ''}
+        </span>
         <span className="hud__clock">
           {snapshot.isNight ? '🌙' : '☀️'} {clock}
         </span>
@@ -82,6 +88,7 @@ export default function Hud() {
       {tasksOpen && <ObjectivesPanel onClose={() => setTasksOpen(false)} />}
       {rosterOpen && <RosterPanel onClose={() => setRosterOpen(false)} />}
       {buildOpen && <BuildMenu onClose={() => setBuildOpen(false)} />}
+      {eraOpen && <EraPanel onClose={() => setEraOpen(false)} />}
 
       <footer className="hud__bar hud__bar--bottom">
         <div className="hud__inv">
@@ -134,6 +141,12 @@ export default function Hud() {
             onClick={() => setBuildOpen((v) => !v)}
           >
             🏗️ Build
+          </button>
+          <button
+            className={`hud__btn ${eraOpen ? 'hud__btn--active' : ''} ${snapshot.canAdvanceEra ? 'hud__btn--alert' : ''}`}
+            onClick={() => setEraOpen((v) => !v)}
+          >
+            🏛️ Era
           </button>
           <button
             className="hud__btn hud__btn--ad"

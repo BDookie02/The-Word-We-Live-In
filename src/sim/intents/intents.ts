@@ -28,6 +28,8 @@ export type Intent =
   | { type: 'placeBuilding'; kind: BuildingKind; x: number; y: number }
   /** Player taps an in-progress building to add construction work. */
   | { type: 'workBuilding'; buildingId: EntityId }
+  /** Advance the civilization to the next era (only when requirements are met). */
+  | { type: 'advanceEra' }
   /** Recover from a collapse — used by the rewarded-ad "revive" reward flow. */
   | { type: 'revive' };
 

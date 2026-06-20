@@ -44,16 +44,16 @@ WORKING RULES (checkpoint protocol):
   push unless a remote is configured — ask the user for GitHub access if needed).
 
 CURRENT POSITION (update this each checkpoint):
-- Last checkpoint: C8 — Phase 8 complete & verified (build/test/lint green; 83 tests passing;
+- Last checkpoint: C9 — Phase 9 complete & verified (build/test/lint green; 92 tests passing;
   app boots clean). NOTE: the preview screenshot tool has been timing out since C5 (environment,
   not the app) — verify via preview_console_logs + tests until it recovers.
-- Next exact task: Phase 9 (civilization progression eras) — add an era/tech model in the sim
-  core (e.g. Primitive → Tribal → Agrarian → … with explicit unlock gates requiring conditions
-  like recruited population, buildings built, resources/tech accumulated). Gate recipes/buildings
-  by era; advancing unlocks new craftables/structures + fires an assistant announcement; surface
-  the current era + progress-to-next in the HUD; add an `era_transition` interstitial-ad hook.
-  Keep era rules + gating pure and unit-tested in src/sim; UI/render read snapshots and dispatch
-  intents only.
+- Next exact task: Phase 10 (emergent social systems) — build a FICTIONAL/abstract, data-driven
+  framework in the sim core (NEVER hard-code real religions/parties): derive social groups from
+  the existing relationship-affinity graph; give NPCs drifting value axes (e.g. tradition↔
+  progress, individual↔collective); emerge a leader per group; generate culture/belief/law
+  "tenets" from group values + history; track inter-group cooperation/rivalry. Add a Society
+  panel to the HUD. Keep it pure, deterministic, and unit-tested in src/sim; UI/render read
+  snapshots and dispatch intents only.
 
 GIT REMOTE STATUS: origin configured + main pushed ->
 https://github.com/BDookie02/The-Word-We-Live-In.git (Git Credential Manager handles auth).

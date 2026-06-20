@@ -10,13 +10,15 @@ export interface BuildingDef {
   cost: ItemCost;
   /** Work units required to finish construction. */
   buildWork: number;
+  /** Minimum civilization era index required to place this (0 = primitive). */
+  minEra: number;
 }
 
 export const BUILDINGS: Record<BuildingKind, BuildingDef> = {
-  campfire: { kind: 'campfire', name: 'Campfire', icon: '🔥', cost: { wood: 3 }, buildWork: 8 },
-  hut: { kind: 'hut', name: 'Shelter', icon: '🛖', cost: { wood: 5, fiber: 3 }, buildWork: 20 },
-  storage: { kind: 'storage', name: 'Storage', icon: '📦', cost: { wood: 4, stone: 2 }, buildWork: 15 },
-  farm: { kind: 'farm', name: 'Farm Plot', icon: '🌱', cost: { wood: 2, fiber: 2 }, buildWork: 12 },
+  campfire: { kind: 'campfire', name: 'Campfire', icon: '🔥', cost: { wood: 3 }, buildWork: 8, minEra: 0 },
+  hut: { kind: 'hut', name: 'Shelter', icon: '🛖', cost: { wood: 5, fiber: 3 }, buildWork: 20, minEra: 1 },
+  storage: { kind: 'storage', name: 'Storage', icon: '📦', cost: { wood: 4, stone: 2 }, buildWork: 15, minEra: 1 },
+  farm: { kind: 'farm', name: 'Farm Plot', icon: '🌱', cost: { wood: 2, fiber: 2 }, buildWork: 12, minEra: 1 },
 };
 
 export const BUILDING_ORDER: readonly BuildingKind[] = ['campfire', 'hut', 'storage', 'farm'];

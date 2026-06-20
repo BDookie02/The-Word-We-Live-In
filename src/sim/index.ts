@@ -51,6 +51,16 @@ export {
   type BuildingKind,
 } from './buildings/buildings';
 export {
+  ERAS,
+  MAX_ERA_INDEX,
+  eraDef,
+  canAdvanceEra,
+  nextEraRequirements,
+  type EraDef,
+  type EraId,
+  type EraRequirement,
+} from './progression/eras';
+export {
   getAffinity,
   relKey,
   type RelationshipMap,

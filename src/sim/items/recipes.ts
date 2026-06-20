@@ -8,6 +8,8 @@ export interface Recipe {
   inputs: ItemCost;
   /** Optional tool that must be owned to craft this recipe (not consumed). */
   requiresTool?: ItemId;
+  /** Minimum civilization era index required to craft this (0 = primitive). */
+  minEra: number;
 }
 
 /**
@@ -16,31 +18,35 @@ export interface Recipe {
  * Add eras/tiers here in later phases rather than branching code.
  */
 export const RECIPES: readonly Recipe[] = [
-  { id: 'plank', name: 'Plank', output: { item: 'plank', qty: 1 }, inputs: { wood: 2 } },
-  { id: 'rope', name: 'Rope', output: { item: 'rope', qty: 1 }, inputs: { fiber: 3 } },
+  { id: 'plank', name: 'Plank', output: { item: 'plank', qty: 1 }, inputs: { wood: 2 }, minEra: 0 },
+  { id: 'rope', name: 'Rope', output: { item: 'rope', qty: 1 }, inputs: { fiber: 3 }, minEra: 0 },
   {
     id: 'sharp_stone',
     name: 'Sharp Stone',
     output: { item: 'sharp_stone', qty: 1 },
     inputs: { stone: 2 },
+    minEra: 0,
   },
   {
     id: 'axe',
     name: 'Stone Axe',
     output: { item: 'axe', qty: 1 },
     inputs: { wood: 2, sharp_stone: 1, rope: 1 },
+    minEra: 1,
   },
   {
     id: 'pickaxe',
     name: 'Stone Pickaxe',
     output: { item: 'pickaxe', qty: 1 },
     inputs: { wood: 2, sharp_stone: 2, rope: 1 },
+    minEra: 1,
   },
   {
     id: 'spear',
     name: 'Spear',
     output: { item: 'spear', qty: 1 },
     inputs: { wood: 1, sharp_stone: 1, rope: 1 },
+    minEra: 1,
   },
 ];
 

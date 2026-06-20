@@ -1,5 +1,14 @@
 import { BUILD, DEMO, NPC_CFG, SURVIVAL } from '../../config/gameConfig';
 import { BUILDINGS, type Building } from '../buildings/buildings';
+import {
+  canAdvanceEra,
+  eraDef,
+  MAX_ERA_INDEX,
+  nextEraRequirements,
+  type EraContext,
+  type EraId,
+  type EraRequirement,
+} from '../progression/eras';
 import { createRng, type RNG } from '../core/rng';
 import { SimClock, type CalendarTime } from '../core/SimClock';
 import {
@@ -55,6 +64,10 @@ export interface WorldSnapshot {
   inventory: Inventory;
   objectives: ObjectiveProgress[];
   messages: AssistantMessage[];
+  era: { index: number; id: EraId; name: string };
+  nextEra: string | null;
+  eraRequirements: EraRequirement[] | null;
+  canAdvanceEra: boolean;
 }
 
 const MAX_MESSAGES = 8;
@@ -85,6 +98,7 @@ export class World {
   inventory: Inventory;
   stats: PlayerStats;
   relationships: RelationshipMap = {};
+  era = 0; // civilization era index
   private shorePoints: Vec2[] = [];
   private npcRng: RNG;
   private nextBuildingId = 0;
@@ -223,6 +237,7 @@ export class World {
         if (!alive) return false;
         const recipe = recipeById(intent.recipeId);
         if (!recipe) return false;
+        if (recipe.minEra > this.era) return false;
         if (recipe.requiresTool && invCount(this.inventory, recipe.requiresTool) < 1) return false;
         if (!invConsume(this.inventory, recipe.inputs)) return false;
         invAdd(this.inventory, recipe.output.item, recipe.output.qty);
@@ -254,6 +269,7 @@ export class World {
       case 'placeBuilding': {
         if (!alive) return false;
         const def = BUILDINGS[intent.kind];
+        if (def.minEra > this.era) return false;
         if (!invConsume(this.inventory, def.cost)) return false;
         this.buildings.push({
           id: `b-${this.nextBuildingId++}`,
@@ -293,6 +309,14 @@ export class World {
         if (!npc || !npc.recruited) return false;
         npc.task = intent.task;
         npc.target = null;
+        return true;
+      }
+
+      case 'advanceEra': {
+        if (this.era >= MAX_ERA_INDEX) return false;
+        if (!canAdvanceEra(this.era, this.eraContext())) return false;
+        this.era += 1;
+        this.pushMessage(`ARIA: Civilization advanced to the ${eraDef(this.era).name} era.`);
         return true;
       }
 
@@ -363,6 +387,25 @@ export class World {
     }
   }
 
+  /** Assemble the inputs the era-advancement rules read from live world state. */
+  private eraContext(): EraContext {
+    return {
+      population: this.npcs.filter((n) => n.recruited).length,
+      crafted: this.stats.crafted,
+      builtFarms: this.buildings.filter((b) => b.kind === 'farm' && b.built).length,
+      builtStorage: this.buildings.filter((b) => b.kind === 'storage' && b.built).length,
+      toolsOwned:
+        invCount(this.inventory, 'axe') +
+        invCount(this.inventory, 'pickaxe') +
+        invCount(this.inventory, 'spear'),
+    };
+  }
+
+  /** Farm output scales with the civilization era (a tangible reward for advancing). */
+  private get farmYieldPerTick(): number {
+    return BUILD.farmFoodPerTick * (1 + this.era * 0.5);
+  }
+
   private addBuildProgress(b: Building, work: number): void {
     if (b.built) return;
     b.progress += work;
@@ -392,7 +435,7 @@ export class World {
           (b) => b.kind === 'farm' && b.built && near(npc.pos, b.pos),
         );
         if (farm) {
-          farm.produce += BUILD.farmFoodPerTick;
+          farm.produce += this.farmYieldPerTick;
           if (farm.produce >= 1) {
             const whole = Math.floor(farm.produce);
             farm.produce -= whole;
@@ -496,6 +539,10 @@ export class World {
       inventory: { ...this.inventory },
       objectives: objectiveProgress(this.objectiveContext(), this.completed),
       messages: this.messages.map((m) => ({ ...m })),
+      era: { index: this.era, id: eraDef(this.era).id, name: eraDef(this.era).name },
+      nextEra: this.era < MAX_ERA_INDEX ? eraDef(this.era + 1).name : null,
+      eraRequirements: nextEraRequirements(this.era, this.eraContext()),
+      canAdvanceEra: canAdvanceEra(this.era, this.eraContext()),
     };
   }
 }

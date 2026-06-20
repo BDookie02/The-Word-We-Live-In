@@ -4,6 +4,38 @@ Append-only checkpoint log. Newest at top. Each entry = a verifiable save point.
 
 ---
 
+## C9 — Phase 9 complete & verified — 2026-06-18
+**Phase:** 9 (civilization progression eras) — ✅ done
+**What was built:**
+- `src/sim/progression/eras.ts`: ordered `ERAS` (Primitive→Tribal→Agrarian→Industrial),
+  `EraContext`, data-driven `nextEraRequirements` + `canAdvanceEra`, `eraDef`. Unit-tested.
+- Era-gating: `minEra` added to every `Recipe` and `BuildingDef` (tools + hut/storage/farm =
+  tribal; rest primitive). World `craft`/`placeBuilding` reject locked items.
+- `advanceEra` intent (checks requirements, increments era, assistant announcement); World
+  `era` field, `eraContext()`, and farm output scaled by era (`farmYieldPerTick`). Snapshot
+  carries `era`, `nextEra`, `eraRequirements`, `canAdvanceEra`.
+- UI: HUD era chip (+ advance alert), `EraPanel` (requirements progress + Advance button that
+  plays the `era_transition` interstitial then dispatches `advanceEra`); craft/build menus show
+  🔒 era locks.
+
+**Files changed:** +src/sim/progression/eras.ts (+ test), ~src/sim/items/recipes.ts,
+~src/sim/buildings/buildings.ts, ~src/sim/intents/intents.ts, ~src/sim/world/World.ts (+ tests;
+fixed 2 pre-era tests by bumping era), ~src/sim/index.ts, +src/ui/EraPanel.tsx, ~src/ui/Hud.tsx,
+~src/ui/CraftingPanel.tsx, ~src/ui/BuildMenu.tsx, ~src/index.css.
+**What works:** era-gated crafting/building; player-triggered era advancement with requirement
+gating + ad hook; era display + locks in UI; farm output scales with era.
+**What is stubbed (honest):** Agrarian/Industrial currently unlock little new content beyond the
+farm-output boost (extend with more era-gated items later); no emergent social systems yet
+(Phase 10); NPCs still don't permanently die; AdMob seam + seed-only save still pending.
+**What failed:** 2 earlier tests (axe chain, farm produce) broke under new era gating — fixed by
+setting `w.era = 1` in those tests.
+**Validation run:** `npm run test` → 92/92 pass · `npm run build` → tsc + vite OK (1.02 MB / 284 KB
+gz; chunk-size warning noted) · `npm run lint` → clean · **runtime:** app boots clean (no console
+errors). Preview **screenshot** tool still timing out since C5 (environment) — verified via console.
+**Next exact task:** Phase 10 — emergent social systems (fictional/abstract): groups from the
+affinity graph, NPC value axes, leaders, culture/belief/law tenets, inter-group relations, Society UI.
+**Git:** committed on `main`, pushed to origin.
+
 ## C8 — Phase 8 complete & verified — 2026-06-18
 **Phase:** 8 (settlement construction + job assignment) — ✅ done
 **What was built:**

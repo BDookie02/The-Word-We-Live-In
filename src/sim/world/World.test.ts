@@ -140,6 +140,7 @@ describe('World crafting & tools', () => {
 
   it('supports a full chain up to a stone axe', () => {
     const w = World.fromSeed(5);
+    w.era = 1; // the axe is a tribal-era recipe
     w.dispatch({ type: 'grantCache', kind: 'wood', amount: 4 });
     w.dispatch({ type: 'grantCache', kind: 'stone', amount: 2 });
     w.dispatch({ type: 'grantCache', kind: 'fiber', amount: 3 });
@@ -274,6 +275,7 @@ describe('World buildings & jobs', () => {
 
   it('a farmer NPC at a built farm produces food', () => {
     const w = World.fromSeed(5);
+    w.era = 1; // the farm is a tribal-era building
     invAdd(w.inventory, 'wood', 2);
     invAdd(w.inventory, 'fiber', 2);
     w.dispatch({ type: 'placeBuilding', kind: 'farm', x: -6, y: 4 });
@@ -289,5 +291,53 @@ describe('World buildings & jobs', () => {
       w.tick();
     }
     expect(invCount(w.inventory, 'food')).toBeGreaterThan(foodBefore);
+  });
+});
+
+describe('World civilization eras', () => {
+  it('starts in the primitive era and exposes progress to the next', () => {
+    const snap = World.fromSeed(5).snapshot();
+    expect(snap.era.index).toBe(0);
+    expect(snap.era.name).toBe('Primitive');
+    expect(snap.nextEra).toBe('Tribal');
+    expect(snap.canAdvanceEra).toBe(false);
+  });
+
+  it('gates era-locked recipes and buildings until advancement', () => {
+    const w = World.fromSeed(5);
+    invAdd(w.inventory, 'wood', 10);
+    invAdd(w.inventory, 'stone', 4);
+    invAdd(w.inventory, 'fiber', 6);
+
+    // Tribal-tier axe + hut are locked at the primitive era.
+    w.dispatch({ type: 'craft', recipeId: 'sharp_stone' });
+    w.dispatch({ type: 'craft', recipeId: 'rope' });
+    expect(w.dispatch({ type: 'craft', recipeId: 'axe' })).toBe(false);
+    expect(w.dispatch({ type: 'placeBuilding', kind: 'hut', x: 1, y: 1 })).toBe(false);
+  });
+
+  it('advances when requirements are met, then unlocks gated content', () => {
+    const w = World.fromSeed(5);
+    invAdd(w.inventory, 'wood', 12);
+    invAdd(w.inventory, 'stone', 6);
+    invAdd(w.inventory, 'fiber', 9);
+
+    // Requirement: craft an item + recruit a survivor.
+    w.dispatch({ type: 'craft', recipeId: 'sharp_stone' });
+    const npc = w.npcs[0];
+    npc.pos = { x: w.player.pos.x, y: w.player.pos.y };
+    w.dispatch({ type: 'recruitNpc', npcId: npc.id });
+
+    expect(w.dispatch({ type: 'advanceEra' })).toBe(true);
+    expect(w.era).toBe(1);
+
+    // Now the tribal-tier hut can be placed.
+    expect(w.dispatch({ type: 'placeBuilding', kind: 'hut', x: 2, y: 2 })).toBe(true);
+  });
+
+  it('refuses to advance when requirements are unmet', () => {
+    const w = World.fromSeed(5);
+    expect(w.dispatch({ type: 'advanceEra' })).toBe(false);
+    expect(w.era).toBe(0);
   });
 });

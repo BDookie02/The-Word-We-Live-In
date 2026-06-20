@@ -2,9 +2,9 @@
 
 > Living status document. Updated at every checkpoint. Read this first when resuming.
 
-**Last updated:** 2026-06-18 (Checkpoint C8 — Phase 8 complete & verified)
-**Current phase:** Phase 8 done ✅ → next: Phase 9 (civilization progression eras)
-**Overall status:** 🟢 Healthy. No drift. Build/test/lint green; app boots clean (preview screenshot tool still timing out — verified via console + 83 tests).
+**Last updated:** 2026-06-18 (Checkpoint C9 — Phase 9 complete & verified)
+**Current phase:** Phase 9 done ✅ → next: Phase 10 (emergent social systems — groups, culture, governance, beliefs, laws)
+**Overall status:** 🟢 Healthy. No drift. Build/test/lint green; app boots clean (preview screenshot tool still timing out — verified via console + 92 tests).
 
 ---
 
@@ -60,12 +60,17 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
   Build menu (tap a kind → tap ground; consumes the stockpile). Construction completes via
   builder NPCs (the `build` task) or player taps on the site; built farms tended by a `farm` NPC
   produce food into the stockpile. Structures render in 3D (translucent ring while in progress).
+- **Civilization eras:** Primitive → Tribal → Agrarian → Industrial. Recipes/buildings are
+  era-gated (`minEra`); advancing requires measurable conditions (craft/recruit/build/own-tool
+  milestones) and is player-triggered via an Era panel (`advanceEra`), playing an interstitial
+  ad at the transition (`era_transition`). Higher eras boost farm output. HUD shows the current
+  era + an alert when advancement is available; craft/build menus show 🔒 locks.
 - **Mobile camera/input:** touch-friendly camera rig (drag-pan + pinch-zoom via drei
   MapControls); tap a resource node to gather, tap ground to move.
 - HUD overlay (clock, needs, inventory, actions, crafting panel) adapts to portrait/landscape.
 - **Monetization** verified at runtime earlier: "Watch ad" → MockAdService → +10 wood;
   revive flow uses the `reward_revive` placement.
-- `npm run test` (83 passing), `npm run build` (tsc + vite; ~1.02 MB JS / 283 KB gz — three.js
+- `npm run test` (92 passing), `npm run build` (tsc + vite; ~1.02 MB JS / 284 KB gz — three.js
   is heavy, code-splitting deferred to Phase 15), `npm run lint` (clean) — all green.
 
 ## Built so far
@@ -80,8 +85,9 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 | 6 AI assistant dialogue/objectives | ✅ done | Auto-tracked objective system + rewards; scripted ARIA message feed (intro/warnings/completions); HUD assistant banner + Tasks panel. Build/test/lint green; app boots clean. |
 | 7 NPC survivors: needs, relationships, tasks | ✅ done | NPC agents + utility AI; relationship/affinity graph; recruit (proximity) + assignable gather tasks → stockpile; NPC rendering + roster panel. Build/test/lint green; app boots clean. |
 | 8 Settlement construction + job assignment | ✅ done | Data-driven buildings; placeBuilding (tap-to-place, consumes stockpile); construction via builders + player taps; farm food jobs; 3D structures + build menu. Build/test/lint green; app boots clean. |
-| 9 Civilization progression eras | ⬜ next | See ROADMAP.md |
-| 10–16 | ⬜ not started | See ROADMAP.md |
+| 9 Civilization progression eras | ✅ done | Era chain + unlock gates (minEra recipes/buildings); advanceEra requirements + Era panel; era_transition ad hook; farm output scales with era. Build/test/lint green; app boots clean. |
+| 10 Emergent social systems | ⬜ next | See ROADMAP.md |
+| 11–16 | ⬜ not started | See ROADMAP.md |
 
 ## What is stubbed (and honestly NOT finished)
 - AdService: real AdMob impl deferred; **MockAdService** used in dev/web.
@@ -93,17 +99,19 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 - None yet. (Android build blocked until JDK 17 installed — not needed before Phase 16.)
 
 ## Next exact task
-Phase 9 — civilization progression eras. Add an era/tech model in the sim core (e.g. Primitive →
-Tribal → Agrarian → … with explicit unlock gates), where advancing requires conditions
-(population recruited, buildings built, resources/tech points accumulated). Gate recipes/buildings
-by era; advancing an era unlocks new craftables/structures and fires an assistant announcement.
-Surface the current era + progress-to-next in the HUD. Consider an interstitial-ad hook at era
-transitions (`era_transition` placement). Keep era rules + gating pure + unit-tested.
+Phase 10 — emergent social systems (groups, culture, politics, beliefs, laws, leadership). Build
+a data-driven, FICTIONAL/abstract framework in the sim core (NOT hard-coded real religions or
+parties): derive social groups/factions from the existing relationship-affinity graph (cluster
+NPCs by mutual affinity); give NPCs simple value axes (e.g. tradition↔progress, individual↔
+collective) that drift; emerge a leader per group (highest affinity/standing); generate culture/
+belief/law "tenets" from group values + settlement history; track inter-group relations
+(cooperation/rivalry). Surface a Society panel in the HUD (groups, leaders, tenets, tensions).
+Keep all of it pure + unit-tested and deterministic.
 
-Known tunables to revisit: day length ~3 min real/day (TICKS_PER_HOUR=150). Survival/craft/NPC/
-build balance first-pass. NPCs don't permanently die yet. Terrain is a single mesh (chunking/LOD =
-Phase 13). Bundle code-splitting = Phase 15. NOTE: the preview **screenshot** tool has been
-timing out since C5 (environment, not the app) — verify via `preview_console_logs` + tests.
+Known tunables to revisit: day length ~3 min real/day (TICKS_PER_HOUR=150). Balance first-pass.
+NPCs don't permanently die yet; eras 2–3 add few unlocks so far (extend later). Terrain is a
+single mesh (chunking/LOD = Phase 13). Bundle code-splitting = Phase 15. NOTE: preview
+**screenshot** tool has been timing out since C5 (environment) — verify via console + tests.
 
 ## Current architecture assumptions
 - Sim core is deterministic and renderer-agnostic; UI never mutates world directly — it
