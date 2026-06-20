@@ -1,7 +1,14 @@
-import { BUILD, DEMO, NPC_CFG, SOCIAL, SURVIVAL } from '../../config/gameConfig';
+import { BUILD, DEMO, NPC_CFG, SOCIAL, SURVIVAL, THREAT, TICK_MS } from '../../config/gameConfig';
 import { BUILDINGS, type Building } from '../buildings/buildings';
 import { deriveSociety, type Society } from '../social/society';
 import { driftToward, randomValues } from '../social/values';
+import {
+  chooseThreatKind,
+  makeThreat,
+  playerAttackPower,
+  THREAT_STATS,
+  type Threat,
+} from '../threats/threats';
 import {
   canAdvanceEra,
   eraDef,
@@ -71,6 +78,7 @@ export interface WorldSnapshot {
   eraRequirements: EraRequirement[] | null;
   canAdvanceEra: boolean;
   society: Society;
+  threats: Threat[];
 }
 
 const MAX_MESSAGES = 8;
@@ -102,10 +110,13 @@ export class World {
   stats: PlayerStats;
   relationships: RelationshipMap = {};
   era = 0; // civilization era index
+  threats: Threat[] = [];
   private society: Society = { groups: [], relations: [] };
   private shorePoints: Vec2[] = [];
   private npcRng: RNG;
+  private threatRng: RNG;
   private nextBuildingId = 0;
+  private nextThreatId = 0;
   /** Set of completed objective ids (latched). */
   private completed: Record<string, boolean> = {};
   private messages: AssistantMessage[] = [];
@@ -130,6 +141,7 @@ export class World {
     this.nodes = this.generateNodes();
     this.shorePoints = findShorePoints(this.terrain, SURVIVAL.drinkMaxHeightAboveWater);
     this.npcRng = this.rng.fork(0x2);
+    this.threatRng = this.rng.fork(0x4);
     this.npcs = this.generateNpcs();
 
     // The AI assistant's opening guidance (scripted, no LLM).
@@ -317,6 +329,22 @@ export class World {
         return true;
       }
 
+      case 'attackThreat': {
+        if (!alive) return false;
+        const threat = this.threats.find((t) => t.id === intent.threatId);
+        if (!threat) return false;
+        threat.hp -= playerAttackPower(this.inventory);
+        if (threat.hp <= 0) this.killThreat(threat);
+        return true;
+      }
+
+      case 'repelThreats': {
+        if (this.threats.length === 0) return false;
+        this.threats = [];
+        this.pushMessage('ARIA: Distress beacon fired — the threats have scattered.');
+        return true;
+      }
+
       case 'advanceEra': {
         if (this.era >= MAX_ERA_INDEX) return false;
         if (!canAdvanceEra(this.era, this.eraContext())) return false;
@@ -451,12 +479,86 @@ export class World {
     }
   }
 
+  private killThreat(threat: Threat): void {
+    const loot = THREAT_STATS[threat.kind].loot;
+    for (const [id, qty] of Object.entries(loot) as [ItemId, number][]) {
+      invAdd(this.inventory, id, qty);
+    }
+    this.threats = this.threats.filter((t) => t.id !== threat.id);
+  }
+
+  /** Maybe spawn a threat at the world edge, on land, respecting the active cap. */
+  private maybeSpawnThreat(): void {
+    if (this.threats.length >= THREAT.maxActive) return;
+    const chance =
+      (this.clock.isNight ? THREAT.spawnChanceNight : THREAT.spawnChanceDay) +
+      this.era * THREAT.eraSpawnBonus;
+    if (this.threatRng.next() > chance) return;
+
+    const radius = this.terrain.worldSize / 2 - THREAT.edgeMargin;
+    for (let attempt = 0; attempt < 8; attempt++) {
+      const angle = this.threatRng.range(0, Math.PI * 2);
+      const x = Math.cos(angle) * radius;
+      const z = Math.sin(angle) * radius;
+      if (sampleHeight(this.terrain, x, z) <= this.terrain.waterLevel + 0.4) continue;
+      const kind = chooseThreatKind(this.threatRng, this.era);
+      this.threats.push(makeThreat(`threat-${this.nextThreatId++}`, kind, { x, y: z }));
+      this.pushMessage(`ARIA: A ${kind} approaches the settlement!`);
+      return;
+    }
+  }
+
+  /** Move threats toward the player, apply contact damage, and let guards fight back. */
+  private updateThreats(): void {
+    if (this.clock.tick % THREAT.spawnCheckTicks === 0) this.maybeSpawnThreat();
+    if (this.threats.length === 0) return;
+
+    const speed = THREAT.speed * (TICK_MS / 1000);
+    const attackR2 = THREAT.attackRange * THREAT.attackRange;
+    const guardR2 = THREAT.guardRange * THREAT.guardRange;
+    const guards = this.npcs.filter((n) => n.recruited && n.task === 'guard');
+
+    for (const threat of this.threats) {
+      if (this.player.status === 'alive') {
+        const dx = this.player.pos.x - threat.pos.x;
+        const dz = this.player.pos.y - threat.pos.y;
+        const d2 = dx * dx + dz * dz;
+        if (d2 <= attackR2) {
+          if (this.clock.tick - threat.lastAttackTick >= THREAT.attackCooldownTicks) {
+            threat.lastAttackTick = this.clock.tick;
+            this.player.needs.health = clamp01to100(
+              this.player.needs.health - THREAT_STATS[threat.kind].damage,
+            );
+            if (this.player.needs.health <= 0) {
+              this.player.status = 'collapsed';
+              this.player.target = null;
+              this.pushMessage('ARIA: You were struck down defending the settlement.');
+            }
+          }
+        } else {
+          const d = Math.sqrt(d2) || 1;
+          threat.pos.x += (dx / d) * speed;
+          threat.pos.y += (dz / d) * speed;
+        }
+      }
+      // Guards chip away at adjacent threats.
+      for (const g of guards) {
+        const gx = g.pos.x - threat.pos.x;
+        const gz = g.pos.y - threat.pos.y;
+        if (gx * gx + gz * gz <= guardR2) threat.hp -= THREAT.guardDamagePerTick;
+      }
+    }
+
+    for (const dead of this.threats.filter((t) => t.hp <= 0)) this.killThreat(dead);
+  }
+
   /** Advance every NPC one tick: behaviour, needs decay, and any node interaction. */
   private updateNpcs(): void {
     const ctx = {
       terrain: this.terrain,
       nodes: this.nodes,
       buildings: this.buildings,
+      threats: this.threats,
       shorePoints: this.shorePoints,
       rng: this.npcRng,
     };
@@ -531,6 +633,7 @@ export class World {
     }
     this.updateNpcs();
     this.updateBuildings();
+    this.updateThreats();
     this.updateRelationships();
     if (this.clock.tick % SOCIAL.recomputeTicks === 0) this.updateSociety();
     this.evaluateObjectives();
@@ -577,6 +680,7 @@ export class World {
         })),
         relations: this.society.relations.map((r) => ({ ...r })),
       },
+      threats: this.threats.map((t) => ({ ...t, pos: { ...t.pos } })),
     };
   }
 }

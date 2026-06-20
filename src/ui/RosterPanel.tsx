@@ -8,6 +8,7 @@ const TASK_OPTIONS: { task: NpcTaskKind; label: string }[] = [
   { task: 'gather_fiber', label: '🌾 Fiber' },
   { task: 'build', label: '🏗️ Build' },
   { task: 'farm', label: '🌱 Farm' },
+  { task: 'guard', label: '🛡️ Guard' },
 ];
 
 const BEHAVIOR_LABEL: Record<string, string> = {

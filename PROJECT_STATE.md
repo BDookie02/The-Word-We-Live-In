@@ -2,9 +2,9 @@
 
 > Living status document. Updated at every checkpoint. Read this first when resuming.
 
-**Last updated:** 2026-06-18 (Checkpoint C10 — Phase 10 complete & verified)
-**Current phase:** Phase 10 done ✅ → next: Phase 11 (enemies/threats + weapon/tool progression)
-**Overall status:** 🟢 Healthy. No drift. Build/test/lint green; app boots clean (preview screenshot tool still timing out — verified via console + 103 tests).
+**Last updated:** 2026-06-18 (Checkpoint C11 — Phase 11 complete & verified)
+**Current phase:** Phase 11 done ✅ → next: Phase 12 (save/load)
+**Overall status:** 🟢 Healthy. No drift. Build/test/lint green; app boots clean (preview screenshot tool still timing out — verified via console + 111 tests).
 
 ---
 
@@ -71,12 +71,17 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
   tenets**, and getting a seeded fictional name. Inter-group **stance** (ally/neutral/rival)
   comes from value distance; members' values converge toward their group over time. A Society
   panel shows groups, leaders, members, tenets, and rivalries. (No real religions/parties.)
+- **Threats + combat:** seeded threats (predator/raider) spawn over time (more at night / higher
+  eras), move toward the player, and deal contact damage (→ collapse if health hits 0). Tap a
+  threat to attack with your best weapon (spear/axe boost power); kills drop loot. NPCs on the
+  `guard` task auto-fight nearby threats. A threat alert + rewarded-ad "repel" (`reward_defense`)
+  appear when threats are present. Threats render in 3D.
 - **Mobile camera/input:** touch-friendly camera rig (drag-pan + pinch-zoom via drei
   MapControls); tap a resource node to gather, tap ground to move.
 - HUD overlay (clock, needs, inventory, actions, crafting panel) adapts to portrait/landscape.
 - **Monetization** verified at runtime earlier: "Watch ad" → MockAdService → +10 wood;
   revive flow uses the `reward_revive` placement.
-- `npm run test` (103 passing), `npm run build` (tsc + vite; ~1.02 MB JS / 286 KB gz — three.js
+- `npm run test` (111 passing), `npm run build` (tsc + vite; ~1.03 MB JS / 287 KB gz — three.js
   is heavy, code-splitting deferred to Phase 15), `npm run lint` (clean) — all green.
 
 ## Built so far
@@ -93,8 +98,9 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 | 8 Settlement construction + job assignment | ✅ done | Data-driven buildings; placeBuilding (tap-to-place, consumes stockpile); construction via builders + player taps; farm food jobs; 3D structures + build menu. Build/test/lint green; app boots clean. |
 | 9 Civilization progression eras | ✅ done | Era chain + unlock gates (minEra recipes/buildings); advanceEra requirements + Era panel; era_transition ad hook; farm output scales with era. Build/test/lint green; app boots clean. |
 | 10 Emergent social systems | ✅ done | Value axes; affinity-clustered groups; leaders; fictional culture/belief/law tenets + names; ally/rival relations; value drift; Society panel. Build/test/lint green; app boots clean. |
-| 11 Enemies/threats + weapon progression | ⬜ next | See ROADMAP.md |
-| 12–16 | ⬜ not started | See ROADMAP.md |
+| 11 Enemies/threats + weapon progression | ✅ done | Seeded threat spawns (night/era-scaled); contact damage + collapse; tap-attack w/ weapon power; loot; guard NPCs; ad-repel; 3D threats + alert. Build/test/lint green; app boots clean. |
+| 12 Save/load | ⬜ next | See ROADMAP.md |
+| 13–16 | ⬜ not started | See ROADMAP.md |
 
 ## What is stubbed (and honestly NOT finished)
 - AdService: real AdMob impl deferred; **MockAdService** used in dev/web.
@@ -106,19 +112,21 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 - None yet. (Android build blocked until JDK 17 installed — not needed before Phase 16.)
 
 ## Next exact task
-Phase 11 — enemies/threats + weapon/tool progression. Add hostile entities in the sim core
-(e.g. predators/raiders) that spawn over time (more at night / higher eras), move toward the
-player or settlement, and deal damage on contact (drains health). Add a combat model: equip a
-weapon (spear, etc.) for attack power; the player (and maybe guard-tasked NPCs) can fight back;
-threats can be defeated for loot. Tie weapon strength to era/tech. Render threats in 3D; HUD
-shows threat alerts. Consider a rewarded-ad "shield/defense" hook. Keep combat + spawning pure,
-deterministic (seeded), and unit-tested.
+Phase 12 — save/load. Build the real versioned save in the sim core: serialize the full World
+state (seed, clock tick, player, inventory, npcs incl. values, buildings, relationships, era,
+stats, threats, objective-completion + messages) to a versioned JSON blob, plus a deserialize/
+`World.restore` that rebuilds an identical world (terrain is regenerated from the seed, not
+stored). Add a migrations seam keyed on version. Wire SaveService to persist/load it (web
+localStorage now, Capacitor Preferences later) with autosave on an interval + manual Save/Load in
+the UI; offer Continue on launch. Keep serialize/deserialize pure + round-trip unit-tested
+(save → load → snapshot equal).
 
 Known tunables to revisit: day length ~3 min real/day (TICKS_PER_HOUR=150). Balance first-pass;
-group-affinity threshold (8) means organic grouping is slow — assigning NPCs to the same
-job/building speeds bonding. NPCs don't permanently die yet; eras 2–3 add little new content.
-Terrain is a single mesh (chunking/LOD = Phase 13). Bundle code-splitting = Phase 15. NOTE:
-preview **screenshot** tool has been timing out since C5 (environment) — verify via console + tests.
+group-affinity threshold (8) means organic grouping is slow — assigning NPCs together speeds it.
+NPCs don't permanently die yet; eras 2–3 add little new content; governance is descriptive (no
+enforced law mechanics yet). Terrain is a single mesh (chunking/LOD = Phase 13). Bundle
+code-splitting = Phase 15. NOTE: preview **screenshot** tool timing out since C5 (environment) —
+verify via console + tests.
 
 ## Current architecture assumptions
 - Sim core is deterministic and renderer-agnostic; UI never mutates world directly — it

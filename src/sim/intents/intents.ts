@@ -30,6 +30,10 @@ export type Intent =
   | { type: 'workBuilding'; buildingId: EntityId }
   /** Advance the civilization to the next era (only when requirements are met). */
   | { type: 'advanceEra' }
+  /** Player attacks a threat (uses the best owned weapon). */
+  | { type: 'attackThreat'; threatId: EntityId }
+  /** Clear all active threats — used by the rewarded-ad "distress beacon" defense flow. */
+  | { type: 'repelThreats' }
   /** Recover from a collapse — used by the rewarded-ad "revive" reward flow. */
   | { type: 'revive' };
 

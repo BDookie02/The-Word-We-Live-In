@@ -60,6 +60,7 @@ export default function Hud() {
   const latestMessage = snapshot.messages[snapshot.messages.length - 1];
   const openTasks = snapshot.objectives.filter((o) => !o.completed).length;
   const recruited = snapshot.npcs.filter((n) => n.recruited).length;
+  const threatCount = snapshot.threats.length;
 
   return (
     <div className="hud">
@@ -77,6 +78,12 @@ export default function Hud() {
       {latestMessage && (
         <div className="assistant" key={latestMessage.id}>
           {latestMessage.text}
+        </div>
+      )}
+
+      {threatCount > 0 && (
+        <div className="threat-alert">
+          ⚠️ {threatCount} threat{threatCount > 1 ? 's' : ''} — tap them to fight back
         </div>
       )}
 
@@ -157,19 +164,29 @@ export default function Hud() {
           >
             🏛️ Era
           </button>
-          <button
-            className="hud__btn hud__btn--ad"
-            disabled={adBusy || !alive}
-            onClick={() =>
-              watchForReward('reward_cache', {
-                type: 'grantCache',
-                kind: 'wood',
-                amount: ADS.rewardCacheAmount,
-              })
-            }
-          >
-            {adBusy ? 'Loading…' : `🎁 +${ADS.rewardCacheAmount} wood`}
-          </button>
+          {threatCount > 0 ? (
+            <button
+              className="hud__btn hud__btn--ad"
+              disabled={adBusy}
+              onClick={() => watchForReward('reward_defense', { type: 'repelThreats' })}
+            >
+              {adBusy ? 'Loading…' : '🛡️ Repel (ad)'}
+            </button>
+          ) : (
+            <button
+              className="hud__btn hud__btn--ad"
+              disabled={adBusy || !alive}
+              onClick={() =>
+                watchForReward('reward_cache', {
+                  type: 'grantCache',
+                  kind: 'wood',
+                  amount: ADS.rewardCacheAmount,
+                })
+              }
+            >
+              {adBusy ? 'Loading…' : `🎁 +${ADS.rewardCacheAmount} wood`}
+            </button>
+          )}
         </div>
       </footer>
     </div>

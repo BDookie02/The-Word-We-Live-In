@@ -6,6 +6,7 @@ import BuildingMeshes from './BuildingMeshes';
 import NpcMeshes from './NpcMeshes';
 import ResourceNodeMesh from './ResourceNodeMesh';
 import TerrainMesh from './TerrainMesh';
+import ThreatMeshes from './ThreatMeshes';
 
 /**
  * The low-poly 3D world. Reads the latest sim snapshot and the static terrain from the store
@@ -85,6 +86,7 @@ export default function WorldScene() {
 
       <BuildingMeshes />
       <NpcMeshes />
+      <ThreatMeshes />
     </>
   );
 }

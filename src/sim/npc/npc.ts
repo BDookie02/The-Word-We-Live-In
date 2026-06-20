@@ -7,7 +7,7 @@ export type NpcBehavior = 'idle' | 'wander' | 'seekWater' | 'seekFood' | 'task';
 export type GatherTask = 'gather_wood' | 'gather_stone' | 'gather_food' | 'gather_fiber';
 
 /** All tasks a recruited NPC can be assigned. */
-export type NpcTaskKind = GatherTask | 'build' | 'farm';
+export type NpcTaskKind = GatherTask | 'build' | 'farm' | 'guard';
 
 export const TASK_RESOURCE: Record<GatherTask, ResourceKind> = {
   gather_wood: 'wood',

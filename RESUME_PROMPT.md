@@ -44,15 +44,16 @@ WORKING RULES (checkpoint protocol):
   push unless a remote is configured — ask the user for GitHub access if needed).
 
 CURRENT POSITION (update this each checkpoint):
-- Last checkpoint: C10 — Phase 10 complete & verified (build/test/lint green; 103 tests passing;
+- Last checkpoint: C11 — Phase 11 complete & verified (build/test/lint green; 111 tests passing;
   app boots clean). NOTE: the preview screenshot tool has been timing out since C5 (environment,
   not the app) — verify via preview_console_logs + tests until it recovers.
-- Next exact task: Phase 11 (enemies/threats + weapon/tool progression) — add hostile entities
-  in the sim core (predators/raiders) that spawn over time (seeded; more at night / higher eras),
-  move toward the player/settlement, and deal contact damage; a combat model where an equipped
-  weapon (spear etc., era-tied power) lets the player (and optionally guard-tasked NPCs) fight
-  back, with loot on defeat; render threats in 3D, show HUD threat alerts, optional rewarded-ad
-  defense hook. Keep combat + spawning pure, deterministic (seeded), and unit-tested in src/sim;
+- Next exact task: Phase 12 (save/load) — build the real versioned save in the sim core:
+  serialize the full World (seed, clock tick, player, inventory, npcs incl. values, buildings,
+  relationships, era, stats, threats, objective-completion + messages) to a versioned JSON blob +
+  a deserialize/World.restore that rebuilds an identical world (terrain regenerated from seed, not
+  stored); add a version-keyed migrations seam; wire SaveService to persist/load (web localStorage
+  now, Capacitor Preferences later) with autosave interval + manual Save/Load + Continue on launch.
+  Round-trip unit-test (save → load → snapshot equal). Keep serialize/deserialize pure in src/sim;
   UI/render read snapshots and dispatch intents only.
 
 GIT REMOTE STATUS: origin configured + main pushed ->

@@ -20,7 +20,7 @@ Phased build plan. Each phase is small enough to verify before moving on. Status
 | 8 | Settlement construction + job assignment | Data-driven buildings, placeBuilding (tap-to-place + cost), construction via builders/player, farm food jobs, 3D structures + build menu | ✅ |
 | 9 | Civilization progression eras | Era chain + minEra-gated recipes/buildings, requirement-gated advanceEra + Era panel, era_transition ad hook, era-scaled farm output | ✅ |
 | 10 | Emergent social systems | Value axes, affinity-clustered groups + leaders, fictional culture/belief/law tenets + names, ally/rival relations, value drift, Society panel — *fictional/emergent* | ✅ |
-| 11 | Enemies/threats + weapon/tool progression | Threat spawners, combat model, weapon/tool tech tiers | ⬜ |
+| 11 | Enemies/threats + weapon/tool progression | Seeded threat spawns (night/era), contact damage + collapse, tap-attack w/ weapon power, loot, guard NPCs, ad-repel, 3D threats | ✅ |
 | 12 | Save/load | Versioned save schema, storage adapter (web localStorage / Capacitor), migrations | ⬜ |
 | 13 | Zoom scale layers | Character ↔ settlement ↔ planet ↔ orbit/galaxy LOD + camera transitions | ⬜ |
 | 14 | Multiplayer architecture interfaces | Net interfaces, command/snapshot protocol sketch — **offline-first, not implemented** | ⬜ |

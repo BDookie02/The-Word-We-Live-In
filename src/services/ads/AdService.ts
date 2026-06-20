@@ -13,6 +13,7 @@ export type AdPlacement =
   | 'reward_speedup' // skip/accelerate a craft or build
   | 'reward_revive' // recover after the player dies
   | 'reward_cache' // bonus resource supply drop
+  | 'reward_defense' // distress beacon that repels active threats
   | 'era_transition'; // interstitial shown between civilization eras
 
 export interface RewardResult {

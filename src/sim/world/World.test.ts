@@ -4,6 +4,7 @@ import { DEMO, NPC_CFG } from '../../config/gameConfig';
 import { sampleHeight } from '../planet/Terrain';
 import { invAdd, invCount } from '../items/inventory';
 import { BUILDINGS } from '../buildings/buildings';
+import { makeThreat, THREAT_STATS } from '../threats/threats';
 
 describe('World', () => {
   it('generates identical worlds from the same seed', () => {
@@ -363,5 +364,56 @@ describe('World emergent society', () => {
   it('has no groups before survivors bond', () => {
     const snap = World.fromSeed(5).snapshot();
     expect(snap.society.groups).toHaveLength(0);
+  });
+});
+
+describe('World threats & combat', () => {
+  it('attacking a threat damages it and kills it with enough hits, dropping loot', () => {
+    const w = World.fromSeed(5);
+    invAdd(w.inventory, 'spear', 1); // attack power = base + 3
+    w.threats.push(makeThreat('threat-x', 'predator', { x: 30, y: 30 }));
+    const woodBefore = invCount(w.inventory, 'wood');
+    expect(w.dispatch({ type: 'attackThreat', threatId: 'threat-x' })).toBe(true);
+    expect(w.threats[0]?.hp).toBeLessThan(THREAT_STATS.predator.maxHp);
+    // Finish it off.
+    for (let i = 0; i < 5 && w.threats.length > 0; i++) {
+      w.dispatch({ type: 'attackThreat', threatId: 'threat-x' });
+    }
+    expect(w.threats).toHaveLength(0);
+    // Predator loot includes food + fiber (wood unrelated, unchanged here).
+    expect(invCount(w.inventory, 'food')).toBeGreaterThan(0);
+    expect(invCount(w.inventory, 'wood')).toBe(woodBefore);
+  });
+
+  it('a threat in contact damages the player', () => {
+    const w = World.fromSeed(5);
+    w.threats.push(makeThreat('threat-y', 'predator', { ...w.player.pos }));
+    const before = w.player.needs.health;
+    w.tick();
+    expect(w.player.needs.health).toBeLessThan(before);
+  });
+
+  it('repelThreats clears the field (and is a no-op when empty)', () => {
+    const w = World.fromSeed(5);
+    expect(w.dispatch({ type: 'repelThreats' })).toBe(false);
+    w.threats.push(makeThreat('t1', 'raider', { x: 10, y: 10 }));
+    w.threats.push(makeThreat('t2', 'predator', { x: -10, y: 5 }));
+    expect(w.dispatch({ type: 'repelThreats' })).toBe(true);
+    expect(w.threats).toHaveLength(0);
+  });
+
+  it('a guard NPC damages an adjacent threat', () => {
+    const w = World.fromSeed(5);
+    const npc = w.npcs[0];
+    npc.recruited = true;
+    npc.task = 'guard';
+    const threat = makeThreat('threat-z', 'raider', { x: 25, y: 25 });
+    w.threats.push(threat);
+    const hpBefore = threat.hp;
+    for (let i = 0; i < 12; i++) {
+      npc.pos = { x: threat.pos.x, y: threat.pos.y }; // keep the guard on the threat
+      w.tick();
+    }
+    expect(threat.hp).toBeLessThan(hpBefore);
   });
 });

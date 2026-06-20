@@ -46,6 +46,23 @@ export const SURVIVAL = {
   reviveLevel: 60, // needs/health restored to this on revive
 } as const;
 
+// Enemies / threats + combat (Phase 11). Seeded, deterministic.
+export const THREAT = {
+  spawnCheckTicks: 60, // evaluate a spawn every N ticks
+  spawnChanceDay: 0.15,
+  spawnChanceNight: 0.45,
+  eraSpawnBonus: 0.07, // + per era index (a growing settlement attracts more raids)
+  maxActive: 6,
+  edgeMargin: 10, // spawn this far inside the world edge
+  speed: 6, // world units / second (slower than the player)
+  attackRange: 2.2, // distance at which a threat can strike the player
+  attackCooldownTicks: 20,
+  contactDamage: 6, // fallback; per-kind damage in THREAT_STATS
+  guardRange: 3.0, // guard NPCs damage threats within this distance
+  guardDamagePerTick: 0.25,
+  playerAttackBase: 2, // bare-handed attack power
+} as const;
+
 // Emergent social systems (Phase 10). Fictional/abstract, deterministic.
 export const SOCIAL = {
   recomputeTicks: 40, // re-derive society every N ticks (~2s)

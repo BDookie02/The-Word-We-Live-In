@@ -27,6 +27,7 @@ function ctx(over: Partial<NpcStepCtx> = {}): NpcStepCtx {
     terrain,
     nodes: [],
     buildings: [],
+    threats: [],
     shorePoints: [{ x: 5, y: 0 }],
     rng: createRng(1),
     ...over,

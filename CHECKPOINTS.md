@@ -4,6 +4,40 @@ Append-only checkpoint log. Newest at top. Each entry = a verifiable save point.
 
 ---
 
+## C11 — Phase 11 complete & verified — 2026-06-18
+**Phase:** 11 (enemies/threats + weapon/tool progression) — ✅ done
+**What was built:**
+- Config `THREAT` (spawn cadence/chances, era/night scaling, speed, ranges, damage, guard, base
+  attack). `services/ads`: added `reward_defense` placement.
+- `src/sim/threats/threats.ts`: `Threat` + `THREAT_STATS` (predator/raider hp/damage/loot),
+  `WEAPON_BONUS` + `playerAttackPower` (best owned weapon), `chooseThreatKind` (raiders scale with
+  era), `makeThreat`. Tested.
+- NPC `guard` task added; `npcAI` targets the nearest threat when guarding.
+- `World`: `threats` + seeded `threatRng`; `maybeSpawnThreat` (edge/on-land, capped, night/era
+  scaled), `updateThreats` (move toward player, cooldowned contact damage → collapse, guard NPC
+  damage, death + loot via `killThreat`), `attackThreat` (weapon-power) + `repelThreats` intents;
+  threats passed to NPC ctx; snapshot carries `threats`.
+- Render `ThreatMeshes` (tap-to-attack). UI: threat-alert banner + a swap of the ad button to
+  "🛡️ Repel (ad)" (`reward_defense`) when threats are present; roster gains a Guard task.
+
+**Files changed:** ~src/config/gameConfig.ts, ~src/services/ads/AdService.ts,
++src/sim/threats/threats.ts (+ test), ~src/sim/npc/npc.ts, ~src/sim/npc/npcAI.ts (+ test ctx),
+~src/sim/intents/intents.ts, ~src/sim/world/World.ts (+ tests), ~src/sim/index.ts,
++src/render/ThreatMeshes.tsx, ~src/render/WorldScene.tsx, ~src/ui/Hud.tsx, ~src/ui/RosterPanel.tsx,
+~src/index.css.
+**What works:** threats spawn/advance/attack; tap-attack with weapon scaling + loot; guard NPCs
+defend; ad-repel; collapse via combat ties into existing revive.
+**What is stubbed (honest):** no dedicated weapon "equip" UI (best owned weapon auto-applies); no
+ranged/era weapon tiers beyond spear/axe bonus; threats target the player (not buildings) for now;
+save/load still seed-only (Phase 12 next); AdMob seam still pending.
+**What failed:** one test type error (npcAI test ctx missing `threats`) — added.
+**Validation run:** `npm run test` → 111/111 pass · `npm run build` → tsc + vite OK (1.03 MB /
+287 KB gz; chunk-size warning noted) · `npm run lint` → clean · **runtime:** app boots clean (no
+console errors). Preview **screenshot** tool still timing out since C5 (environment) — via console.
+**Next exact task:** Phase 12 — full versioned save/load (serialize/restore World; migrations seam;
+autosave + manual Save/Load + Continue), round-trip unit-tested.
+**Git:** committed on `main`, pushed to origin.
+
 ## C10 — Phase 10 complete & verified — 2026-06-18
 **Phase:** 10 (emergent social systems) — ✅ done. Fictional/abstract; NO real religions/parties.
 **What was built:**

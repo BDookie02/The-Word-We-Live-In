@@ -83,6 +83,13 @@ export {
   type SocialMember,
   type Society,
 } from './social/society';
+export {
+  THREAT_STATS,
+  WEAPON_BONUS,
+  playerAttackPower,
+  type Threat,
+  type ThreatKind,
+} from './threats/threats';
 export type { NpcSnapshot } from './world/World';
 export {
   RESOURCE_KINDS,

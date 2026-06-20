@@ -3,6 +3,7 @@ import type { Building } from '../buildings/buildings';
 import type { RNG } from '../core/rng';
 import type { EntityId, ResourceKind, ResourceNode, Vec2 } from '../core/types';
 import type { TerrainData } from '../planet/Terrain';
+import type { Threat } from '../threats/threats';
 import { isGatherTask, TASK_RESOURCE, type NPC } from './npc';
 
 const SPEED_PER_TICK = NPC_CFG.moveSpeed * (TICK_MS / 1000);
@@ -11,6 +12,7 @@ export interface NpcStepCtx {
   terrain: TerrainData;
   nodes: readonly ResourceNode[];
   buildings: readonly Building[];
+  threats: readonly Threat[];
   shorePoints: readonly Vec2[];
   rng: RNG;
 }
@@ -105,6 +107,10 @@ export function stepNpc(npc: NPC, ctx: NpcStepCtx): NpcStepResult {
       );
       npc.target = site ? site.pos : null;
       if (!site) npc.behavior = 'idle';
+    } else if (npc.task === 'guard') {
+      const threat = nearest(npc.pos, ctx.threats);
+      npc.target = threat ? threat.pos : null;
+      if (!threat) npc.behavior = 'idle';
     } else {
       // 'farm'
       const farm = nearest(
