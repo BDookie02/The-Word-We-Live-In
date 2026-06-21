@@ -4,6 +4,35 @@ Append-only checkpoint log. Newest at top. Each entry = a verifiable save point.
 
 ---
 
+## C15 — Phase 15 complete & verified — 2026-06-21
+**Phase:** 15 (mobile UI polish + performance pass) — ✅ done. Render/UI/build only; sim untouched.
+**What was built:**
+- Performance: `vite.config.ts` `manualChunks` vendor split (three-vendor / react-vendor / vendor)
+  + `chunkSizeWarningLimit` 1200; `App` lazy-loads `WorldCanvas` via `React.lazy` + `Suspense`.
+  Result: app entry chunk ~1 MB → ~45 KB (15 KB gz); three.js isolated + lazy; no chunk warning.
+- UX: `ui/MainMenu.tsx` boot screen (New Game / Continue — Continue only if a save exists; New Game
+  clears the save and uses a random seed). `App` gates the GameLoop on a chosen mode (ad init now
+  happens only after Start, confirmed via console).
+- Polish: HUD hidden at planet/orbit scales (only the scale switcher shows); menu CSS; existing
+  44px touch targets + safe-area insets retained.
+
+**Files changed:** ~vite.config.ts, ~src/App.tsx, +src/ui/MainMenu.tsx, ~src/ui/Hud.tsx,
+~src/index.css.
+**What works:** boots to a menu; New Game vs Continue; lazy 3D layer; smaller initial bundle;
+clean HUD at planetary scales; all gameplay intact.
+**What is stubbed (honest):** per-tick snapshot selectors still allocate (acceptable at current
+entity counts; deeper memoization deferred); no animated scale transitions; DPR cap left at
+[1,2]; no settings screen yet.
+**What failed:** nothing. Preview **screenshot** tool was unreliable again this round — verified
+via clean console boot (no errors; no premature ad init at the menu) + build chunk output + tests.
+**Validation run:** `npm run test` → 128/128 pass · `npm run build` → tsc + vite OK, code-split
+(entry 45 KB / react-vendor 238 KB / three-vendor 737 KB), **no chunk-size warning** · `npm run
+lint` → clean · **runtime:** boots to the menu, no console errors.
+**Next exact task:** Phase 16 — Android export/release docs: add Capacitor + capacitor.config.ts,
+write ANDROID.md (build → cap add android → sync → Android Studio), AdMob prod wiring + consent,
+signing/keystore, Play listing checklist. (JDK/Android Studio not installed here — docs + config.)
+**Git:** committed on `main`, pushed to origin.
+
 ## C14 — Phase 14 complete & verified — 2026-06-18
 **Phase:** 14 (multiplayer architecture interfaces) — ✅ done. Offline-first; NOTHING connects.
 **What was built:**

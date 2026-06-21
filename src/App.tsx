@@ -1,20 +1,28 @@
-import { useEffect, useRef } from 'react';
+import { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { GameLoop } from './game/GameLoop';
 import { getAdService } from './services/ads';
 import { SaveService } from './services/save/SaveService';
 import { useGameStore } from './state/store';
-import { hashStringToSeed, World } from './sim';
+import { World } from './sim';
 import { AUTOSAVE_INTERVAL_MS } from './config/gameConfig';
 import Hud from './ui/Hud';
 import CollapseOverlay from './ui/CollapseOverlay';
 import ScaleSwitcher from './ui/ScaleSwitcher';
-import WorldCanvas from './render/WorldCanvas';
+import MainMenu from './ui/MainMenu';
+
+// Lazy-load the 3D render layer so three.js/r3f stay off the initial parse path (perf pass).
+const WorldCanvas = lazy(() => import('./render/WorldCanvas'));
+
+type StartMode = 'new' | 'continue';
+
+function randomSeed(): number {
+  return (Math.floor(Math.random() * 0xffffffff) ^ Date.now()) >>> 0;
+}
 
 /**
- * Root component. Owns the GameLoop lifecycle: restores a saved world (Continue) or starts a
- * fresh one, wires it to the Zustand store (snapshots out, dispatch + save/load in), autosaves
- * on an interval and on unmount, and tears down on unmount. The zoom router branches here in
- * Phase 13.
+ * Root component. Shows a boot menu (New Game / Continue), then owns the GameLoop lifecycle:
+ * builds the world (fresh or restored), wires it to the Zustand store (snapshots out, dispatch +
+ * save/load in), autosaves on an interval and on exit, and tears down on unmount.
  */
 export default function App() {
   const setSnapshot = useGameStore((s) => s.setSnapshot);
@@ -22,16 +30,26 @@ export default function App() {
   const setDispatch = useGameStore((s) => s.setDispatch);
   const setSaveHandlers = useGameStore((s) => s.setSaveHandlers);
   const ready = useGameStore((s) => s.snapshot !== null);
+
+  const [started, setStarted] = useState(false);
+  const modeRef = useRef<StartMode>('continue');
   const loopRef = useRef<GameLoop | null>(null);
 
   useEffect(() => {
+    if (!started) return;
     void getAdService().init();
 
-    const saved = SaveService.loadWorld();
-    const world = saved ? World.restore(saved) : World.fromSeed(hashStringToSeed('terra-prime'));
+    let world: World;
+    if (modeRef.current === 'continue') {
+      const saved = SaveService.loadWorld();
+      world = saved ? World.restore(saved) : World.fromSeed(randomSeed());
+    } else {
+      SaveService.clear();
+      world = World.fromSeed(randomSeed());
+    }
+
     const loop = new GameLoop(world);
     loopRef.current = loop;
-
     setTerrain(loop.getTerrain());
     setDispatch(loop.dispatch);
     setSaveHandlers(
@@ -55,13 +73,28 @@ export default function App() {
       SaveService.saveWorld(loop.serialize());
       loop.stop();
     };
-  }, [setSnapshot, setTerrain, setDispatch, setSaveHandlers]);
+  }, [started, setSnapshot, setTerrain, setDispatch, setSaveHandlers]);
+
+  const begin = (mode: StartMode) => {
+    modeRef.current = mode;
+    setStarted(true);
+  };
+
+  if (!started) {
+    return (
+      <main className="app">
+        <MainMenu hasSave={SaveService.hasSave()} onNewGame={() => begin('new')} onContinue={() => begin('continue')} />
+      </main>
+    );
+  }
 
   return (
     <main className="app">
       {ready ? (
         <>
-          <WorldCanvas />
+          <Suspense fallback={<div className="boot">Rendering world…</div>}>
+            <WorldCanvas />
+          </Suspense>
           <Hud />
           <ScaleSwitcher />
           <CollapseOverlay />

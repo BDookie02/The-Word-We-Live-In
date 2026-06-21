@@ -2,9 +2,9 @@
 
 > Living status document. Updated at every checkpoint. Read this first when resuming.
 
-**Last updated:** 2026-06-18 (Checkpoint C14 — Phase 14 complete & verified)
-**Current phase:** Phase 14 done ✅ → next: Phase 15 (mobile UI polish + performance pass)
-**Overall status:** 🟢 Healthy. No drift. Build/test/lint green; app boots clean (verified via console + 128 tests).
+**Last updated:** 2026-06-21 (Checkpoint C15 — Phase 15 complete & verified)
+**Current phase:** Phase 15 done ✅ → next: Phase 16 (Android export/release documentation)
+**Overall status:** 🟢 Healthy. No drift. Build/test/lint green; app boots clean to the menu (verified via console + 128 tests). Bundle now code-split.
 
 ---
 
@@ -91,13 +91,19 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
   `NetTransport` interface with `NullTransport` (offline) + `LoopbackTransport` (tests/hot-seat),
   and a host-authoritative `MultiplayerSession` with an `OfflineSession` default (`getSession()`).
   Nothing connects; documented in ARCHITECTURE.md as the future drop-in seam.
+- **Polish + performance:** the 3D render layer is **lazy-loaded** and three.js is split into a
+  cacheable `three-vendor` chunk — the app entry chunk dropped from ~1 MB to ~45 KB (15 KB gz),
+  no chunk-size warning. A **boot menu** (New Game / Continue) gates startup (ad init only after
+  Start); the gameplay HUD is hidden at planet/orbit scales; 44px touch targets + safe-area insets;
+  portrait/landscape handled.
 - **Mobile camera/input:** touch-friendly camera rig (drag-pan + pinch-zoom via drei
   MapControls); tap a resource node to gather, tap ground to move.
 - HUD overlay (clock, needs, inventory, actions, crafting panel) adapts to portrait/landscape.
 - **Monetization** verified at runtime earlier: "Watch ad" → MockAdService → +10 wood;
   revive flow uses the `reward_revive` placement.
-- `npm run test` (128 passing), `npm run build` (tsc + vite; ~1.03 MB JS / 289 KB gz — three.js
-  is heavy, code-splitting is the Phase 15 perf pass), `npm run lint` (clean) — all green.
+- `npm run test` (128 passing), `npm run build` (tsc + vite; **code-split** — entry ~45 KB / 15 KB
+  gz, react-vendor ~238 KB / 75 KB gz, lazy `three-vendor` ~737 KB / 195 KB gz, no chunk warning),
+  `npm run lint` (clean) — all green.
 
 ## Built so far
 | Phase | Status | Notes |
@@ -117,8 +123,8 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 | 12 Save/load | ✅ done | Versioned full serialize/restore (RNG-cursor preserved, terrain regenerated); migrations seam; autosave + manual Save/Load + Continue. Round-trip tested; runtime-verified. |
 | 13 Zoom scale layers | ✅ done | viewScale (character/settlement/planet/orbit); follow-cam, biome globe, starfield orbit; scale switcher. Build/test/lint green; app boots clean. |
 | 14 Multiplayer architecture interfaces | ✅ done | NetCommand/NetMessage protocol, NetTransport (+Null/Loopback), host-authoritative Session (+OfflineSession), ARCHITECTURE docs. Interfaces+stubs+tests; offline-first, nothing connects. |
-| 15 Mobile UI polish + performance pass | ⬜ next | See ROADMAP.md |
-| 16 Android export/release docs | ⬜ not started | See ROADMAP.md |
+| 15 Mobile UI polish + performance pass | ✅ done | Code-split three.js + lazy render layer (entry ~45 KB); boot menu (New Game/Continue); HUD hidden at planet/orbit; touch/safe-area polish. Build/test/lint green; boots clean. |
+| 16 Android export/release docs | ⬜ next | See ROADMAP.md |
 
 ## What is stubbed (and honestly NOT finished)
 - AdService: real AdMob impl deferred; **MockAdService** used in dev/web.
@@ -130,19 +136,20 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 - None yet. (Android build blocked until JDK 17 installed — not needed before Phase 16.)
 
 ## Next exact task
-Phase 15 — mobile UI polish + performance pass. Performance: code-split the heavy three.js/r3f
-render layer (React.lazy + Suspense around WorldCanvas, and/or Vite `manualChunks`) to shrink the
-initial bundle below the warning; cap pixel ratio; memoize hot snapshot selectors; verify steady
-frame pacing. UI polish: hide gameplay HUD panels at planet/orbit scales; ensure 44px touch
-targets + safe-area insets everywhere; tidy portrait vs landscape; a lightweight boot/menu screen
-(New Game / Continue). Verify in the browser preview (and resize for portrait/landscape). Keep the
-sim core untouched.
+Phase 16 — Android export/release documentation (FINAL phase). Add Capacitor: `@capacitor/core` +
+`@capacitor/cli` (+ android platform), `capacitor.config.ts` (appId e.g. com.twwli.game, webDir
+`dist`), and document the full path in a new ANDROID.md: `npm run build` → `npx cap add android` →
+`npx cap sync` → open in Android Studio → run/build. Document the **AdMob production wiring**
+(install `@capacitor-community/admob`, fill `AdMobService` TODOs, real ad unit IDs via env,
+UMP/GDPR consent), signing/keystore + release build, and a Play Store listing checklist (privacy
+policy, data-safety form, content rating, icons/screenshots). NOTE: JDK 17 + Android Studio are
+NOT installed on this machine — document the steps; the actual native build runs on a configured
+machine. Keep it docs + config; no behavior change.
 
 Known tunables to revisit: day length ~3 min real/day (TICKS_PER_HOUR=150). Balance first-pass;
-group-affinity threshold (8) makes organic grouping slow — assigning NPCs together speeds it. NPCs
-don't permanently die yet; eras 2–3 add little new content; governance is descriptive. Terrain is
-a single mesh (chunking/LOD revisit). NOTE: preview screenshot tool is intermittent — verify via
-console + tests when it fails.
+group-affinity threshold (8) makes organic grouping slow. NPCs don't permanently die yet; eras 2–3
+add little new content; governance is descriptive. Terrain is a single mesh (chunking/LOD revisit).
+NOTE: preview screenshot tool is intermittent — verify via console + tests when it fails.
 
 ## Current architecture assumptions
 - Sim core is deterministic and renderer-agnostic; UI never mutates world directly — it

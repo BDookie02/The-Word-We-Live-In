@@ -24,7 +24,7 @@ Phased build plan. Each phase is small enough to verify before moving on. Status
 | 12 | Save/load | Versioned full serialize/restore (RNG-cursor preserved, terrain regenerated), migrations seam, localStorage adapter, autosave + manual Save/Load + Continue | ✅ |
 | 13 | Zoom scale layers | viewScale (character/settlement/planet/orbit): follow-cam, low-poly biome globe, starfield orbit, scale switcher | ✅ |
 | 14 | Multiplayer architecture interfaces | NetCommand/NetMessage protocol, NetTransport (+Null/Loopback), host-authoritative Session (+Offline), docs — **offline-first, not implemented** | ✅ |
-| 15 | Mobile UI polish + performance pass | Responsive HUD, touch targets, perf budget, frame profiling | ⬜ |
+| 15 | Mobile UI polish + performance pass | Code-split three.js + lazy render layer (~45 KB entry), boot menu (New Game/Continue), HUD hidden at planet/orbit, touch/safe-area | ✅ |
 | 16 | Android export/release docs | Capacitor Android, AdMob prod config, signing, Play listing checklist | ⬜ |
 
 ## Cross-cutting (woven through phases, not separate)

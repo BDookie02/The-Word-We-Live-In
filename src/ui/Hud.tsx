@@ -45,6 +45,7 @@ export default function Hud() {
   const dispatch = useGameStore((s) => s.dispatch);
   const saveGame = useGameStore((s) => s.saveGame);
   const loadGame = useGameStore((s) => s.loadGame);
+  const viewScale = useGameStore((s) => s.viewScale);
   const { watchForReward, adBusy } = useRewardedAd();
   const [craftOpen, setCraftOpen] = useState(false);
   const [tasksOpen, setTasksOpen] = useState(false);
@@ -53,6 +54,8 @@ export default function Hud() {
   const [eraOpen, setEraOpen] = useState(false);
   const [societyOpen, setSocietyOpen] = useState(false);
   if (!snapshot) return null;
+  // The gameplay HUD belongs to the ground scales; planet/orbit views show only the switcher.
+  if (viewScale === 'planet' || viewScale === 'orbit') return null;
 
   const { player, inventory } = snapshot;
   const alive = player.status === 'alive';
