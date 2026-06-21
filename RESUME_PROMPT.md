@@ -44,14 +44,16 @@ WORKING RULES (checkpoint protocol):
   push unless a remote is configured — ask the user for GitHub access if needed).
 
 CURRENT POSITION (update this each checkpoint):
-- Last checkpoint: C12 — Phase 12 complete & verified (build/test/lint green; 116 tests passing;
-  runtime-verified — the preview screenshot tool recovered and the full game renders).
-- Next exact task: Phase 13 (zoom scale layers) — add a `viewScale` to UI/state (character ↔
-  settlement ↔ planet ↔ orbit/galaxy) with pinch/buttons to switch. Settlement scale = the
-  current r3f world camera. Planet scale = a stylized whole-planet view (low-poly globe or
-  zoomed-out biome map with a settlement marker). Orbit/galaxy scale = the planet as a body among
-  stars. Drive camera/scene swaps from `viewScale`; keep the sim core UNTOUCHED (render/UI only,
-  reading snapshots). Add smooth transitions where easy. UI/render read snapshots, dispatch intents.
+- Last checkpoint: C13 — Phase 13 complete & verified (build/test/lint green; 119 tests passing;
+  app boots clean — screenshot tool went intermittent again, so planet/orbit views weren't
+  captured; verify via console + tests when it fails).
+- Next exact task: Phase 14 (multiplayer architecture interfaces, offline-first, NOT implemented):
+  define the networking seam so future friend-based MP is a drop-in — a `NetCommand` envelope
+  (wrap the existing Intent with tick + playerId), a snapshot/sync contract, a `NetTransport`
+  interface (connect/send/onMessage/disconnect) with a `LocalTransport` loopback default, a
+  host-authoritative `Session`/lobby/peer typing (the deterministic World is the authority), and
+  ARCHITECTURE.md docs. Interfaces + loopback stub + envelope/serialization tests only; nothing
+  network actually runs. Keep it pure where possible; do not change gameplay behavior.
 
 GIT REMOTE STATUS: origin configured + main pushed ->
 https://github.com/BDookie02/The-Word-We-Live-In.git (Git Credential Manager handles auth).

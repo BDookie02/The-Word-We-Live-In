@@ -7,6 +7,7 @@ import { hashStringToSeed, World } from './sim';
 import { AUTOSAVE_INTERVAL_MS } from './config/gameConfig';
 import Hud from './ui/Hud';
 import CollapseOverlay from './ui/CollapseOverlay';
+import ScaleSwitcher from './ui/ScaleSwitcher';
 import WorldCanvas from './render/WorldCanvas';
 
 /**
@@ -62,6 +63,7 @@ export default function App() {
         <>
           <WorldCanvas />
           <Hud />
+          <ScaleSwitcher />
           <CollapseOverlay />
         </>
       ) : (

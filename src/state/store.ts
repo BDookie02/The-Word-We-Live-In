@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 import type { BuildingKind, Intent, TerrainData, WorldSnapshot } from '../sim';
 
+/** Zoom scale layers: character ↔ settlement ↔ planet ↔ orbit/galaxy. */
+export type ViewScale = 'character' | 'settlement' | 'planet' | 'orbit';
+export const VIEW_SCALES: readonly ViewScale[] = ['character', 'settlement', 'planet', 'orbit'];
+
 /**
  * Bridge between the deterministic sim core and React. The GameLoop writes the latest
  * snapshot here each frame; React components subscribe with selectors so they only
@@ -16,6 +20,8 @@ interface GameStore {
   adBusy: boolean;
   /** Building kind pending placement (next ground tap sites it), or null. */
   placement: BuildingKind | null;
+  /** Active zoom scale layer. */
+  viewScale: ViewScale;
   /** Force a save now / revert to the last save. Injected by the GameLoop owner (App). */
   saveGame: () => void;
   loadGame: () => void;
@@ -26,6 +32,7 @@ interface GameStore {
   setAdBusy: (busy: boolean) => void;
   setPlacement: (placement: BuildingKind | null) => void;
   setSaveHandlers: (save: () => void, load: () => void) => void;
+  setViewScale: (scale: ViewScale) => void;
 }
 
 export const useGameStore = create<GameStore>((set) => ({
@@ -36,6 +43,7 @@ export const useGameStore = create<GameStore>((set) => ({
   },
   adBusy: false,
   placement: null,
+  viewScale: 'settlement',
   saveGame: () => {
     /* replaced by App */
   },
@@ -49,4 +57,5 @@ export const useGameStore = create<GameStore>((set) => ({
   setAdBusy: (adBusy) => set({ adBusy }),
   setPlacement: (placement) => set({ placement }),
   setSaveHandlers: (saveGame, loadGame) => set({ saveGame, loadGame }),
+  setViewScale: (viewScale) => set({ viewScale }),
 }));

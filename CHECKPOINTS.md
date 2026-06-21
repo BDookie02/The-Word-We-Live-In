@@ -4,6 +4,39 @@ Append-only checkpoint log. Newest at top. Each entry = a verifiable save point.
 
 ---
 
+## C13 — Phase 13 complete & verified — 2026-06-18
+**Phase:** 13 (zoom scale layers) — ✅ done. Render/UI only; sim core untouched.
+**What was built:**
+- State: `ViewScale` ('character'|'settlement'|'planet'|'orbit') + `viewScale`/`setViewScale`.
+- `render/globeColors.ts`: pure noise-value → biome colour mapping (tested).
+- `render/BiomeGlobe.tsx`: flat-shaded icosphere coloured by seeded fBm → biome palette, with a
+  settlement marker, optional auto-rotate (reused by planet + orbit views).
+- `render/CharacterCamera.tsx`: smooth follow-cam on the player (no controls).
+- `render/PlanetView.tsx`: biome globe + lights + OrbitControls (orbit the planet).
+- `render/OrbitView.tsx`: small globe + seeded starfield (points) + distant sun + OrbitControls.
+- `render/WorldCanvas.tsx`: routes scene + camera/controls by `viewScale` (ground views share
+  WorldScene with CameraRig vs CharacterCamera).
+- `ui/ScaleSwitcher.tsx`: side switcher; rendered in `App`. CSS for switcher.
+
+**Files changed:** ~src/state/store.ts, +src/render/{globeColors.ts(+test),BiomeGlobe.tsx,
+CharacterCamera.tsx,PlanetView.tsx,OrbitView.tsx}, ~src/render/WorldCanvas.tsx,
++src/ui/ScaleSwitcher.tsx, ~src/App.tsx, ~src/index.css.
+**What works:** switching scales swaps scenes/cameras; planet globe + orbit starfield generate
+deterministically from the world seed; settlement/character share the ground world.
+**What is stubbed (honest):** the planet globe is a STYLIZED representation (independent fBm), not
+a 1:1 render of the local terrain patch; transitions are instant (no animated fly-through);
+gameplay HUD stays visible at planet/orbit scales (polish later); no LOD/chunking yet.
+**What failed:** nothing in code; the preview **screenshot** tool went intermittent again this
+round (timed out) — could not capture the planet/orbit views; verified via clean console boot +
+build + 119 tests.
+**Validation run:** `npm run test` → 119/119 pass · `npm run build` → tsc + vite OK (1.03 MB /
+289 KB gz; chunk-size warning noted) · `npm run lint` → clean · **runtime:** app boots clean (no
+console errors); visual capture of new scales deferred (screenshot tool flaky).
+**Next exact task:** Phase 14 — multiplayer architecture interfaces (offline-first): NetCommand
+envelope, NetTransport + LocalTransport loopback, Session/lobby types, docs; interfaces + stub +
+tests only.
+**Git:** committed on `main`, pushed to origin.
+
 ## C12 — Phase 12 complete & verified — 2026-06-18
 **Phase:** 12 (save/load) — ✅ done
 **What was built:**
