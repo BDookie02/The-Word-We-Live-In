@@ -4,6 +4,37 @@ Append-only checkpoint log. Newest at top. Each entry = a verifiable save point.
 
 ---
 
+## C14 — Phase 14 complete & verified — 2026-06-18
+**Phase:** 14 (multiplayer architecture interfaces) — ✅ done. Offline-first; NOTHING connects.
+**What was built:**
+- `src/sim/net/protocol.ts`: `NET_PROTOCOL_VERSION`, `NetCommand` (Intent + tick/seq/playerId),
+  `NetMessage` union (hello/bye/command/sync; sync carries a SaveBlob), versioned
+  `encodeMessage`/`decodeMessage`. Pure + tested.
+- `src/services/net/NetTransport.ts`: `NetTransport` interface + `NullTransport` (offline default)
+  + `LoopbackTransport` (in-process, hot-seat/tests). Tested.
+- `src/services/net/Session.ts`: host-authoritative `MultiplayerSession` interface +
+  `OfflineSession` no-op default + `getSession()` singleton. Tested.
+- `src/services/net/index.ts` barrel; sim barrel exports the protocol.
+- ARCHITECTURE.md: "Multiplayer architecture (Phase 14)" section documenting the model +
+  the future GameLoop integration point (submitIntent → host orders per-tick commands →
+  deterministic re-sim; joiner bootstrapped via `sync` SaveBlob).
+
+**Files changed:** +src/sim/net/protocol.ts(+test), +src/services/net/{NetTransport.ts,Session.ts,
+index.ts,net.test.ts}, ~src/sim/index.ts, ~ARCHITECTURE.md.
+**What works:** protocol encode/decode round-trips + version-rejects; loopback delivery + unsub;
+offline session is a clean no-op; gameplay unchanged (still fully offline).
+**What is stubbed (honest, by design):** no real transport (WebRTC/relay), no lobby/matchmaking,
+session not wired into the GameLoop (offline-first means no behavior change). These are the
+intended future drop-ins; the seam + tests exist now.
+**What failed:** tsc caught arity mismatches in the offline stub method signatures (vitest had
+passed since it strips types) — fixed by giving the stubs full `_`-prefixed params.
+**Validation run:** `npm run test` → 128/128 pass · `npm run build` → tsc + vite OK (1.03 MB /
+289 KB gz; chunk-size warning noted) · `npm run lint` → clean · **runtime:** app boots clean (no
+console errors; interfaces-only phase, no behavior change).
+**Next exact task:** Phase 15 — mobile UI polish + performance pass (code-split three.js, cap DPR,
+hide gameplay HUD at planet/orbit, boot/menu screen, touch-target/safe-area polish).
+**Git:** committed on `main`, pushed to origin.
+
 ## C13 — Phase 13 complete & verified — 2026-06-18
 **Phase:** 13 (zoom scale layers) — ✅ done. Render/UI only; sim core untouched.
 **What was built:**

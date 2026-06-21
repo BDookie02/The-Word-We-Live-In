@@ -93,6 +93,15 @@ export {
 export type { NpcSnapshot } from './world/World';
 export { SAVE_VERSION, migrateSave, type SaveBlob } from './persistence/saveSchema';
 export {
+  NET_PROTOCOL_VERSION,
+  encodeMessage,
+  decodeMessage,
+  type NetCommand,
+  type NetMessage,
+  type Peer,
+  type PlayerId,
+} from './net/protocol';
+export {
   RESOURCE_KINDS,
   emptyTally,
   fullNeeds,

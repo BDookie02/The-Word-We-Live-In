@@ -2,9 +2,9 @@
 
 > Living status document. Updated at every checkpoint. Read this first when resuming.
 
-**Last updated:** 2026-06-18 (Checkpoint C13 — Phase 13 complete & verified)
-**Current phase:** Phase 13 done ✅ → next: Phase 14 (multiplayer architecture interfaces — offline-first)
-**Overall status:** 🟢 Healthy. No drift. Build/test/lint green; app boots clean (screenshot tool intermittent again — verified via console + 119 tests).
+**Last updated:** 2026-06-18 (Checkpoint C14 — Phase 14 complete & verified)
+**Current phase:** Phase 14 done ✅ → next: Phase 15 (mobile UI polish + performance pass)
+**Overall status:** 🟢 Healthy. No drift. Build/test/lint green; app boots clean (verified via console + 128 tests).
 
 ---
 
@@ -86,13 +86,18 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
   planet = a rotating low-poly **biome globe** (seeded fBm → biome palette) with a settlement
   marker; orbit = the planet among a seeded **starfield** lit by a distant sun. Render/UI only —
   the sim core is untouched; scenes/cameras swap off `viewScale`.
+- **Multiplayer architecture (interfaces only, offline-first — NOT implemented):** a versioned
+  `NetCommand`/`NetMessage` protocol (wraps `Intent`; `sync` carries a `SaveBlob`), a
+  `NetTransport` interface with `NullTransport` (offline) + `LoopbackTransport` (tests/hot-seat),
+  and a host-authoritative `MultiplayerSession` with an `OfflineSession` default (`getSession()`).
+  Nothing connects; documented in ARCHITECTURE.md as the future drop-in seam.
 - **Mobile camera/input:** touch-friendly camera rig (drag-pan + pinch-zoom via drei
   MapControls); tap a resource node to gather, tap ground to move.
 - HUD overlay (clock, needs, inventory, actions, crafting panel) adapts to portrait/landscape.
 - **Monetization** verified at runtime earlier: "Watch ad" → MockAdService → +10 wood;
   revive flow uses the `reward_revive` placement.
-- `npm run test` (119 passing), `npm run build` (tsc + vite; ~1.03 MB JS / 289 KB gz — three.js
-  is heavy, code-splitting deferred to Phase 15), `npm run lint` (clean) — all green.
+- `npm run test` (128 passing), `npm run build` (tsc + vite; ~1.03 MB JS / 289 KB gz — three.js
+  is heavy, code-splitting is the Phase 15 perf pass), `npm run lint` (clean) — all green.
 
 ## Built so far
 | Phase | Status | Notes |
@@ -111,8 +116,9 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 | 11 Enemies/threats + weapon progression | ✅ done | Seeded threat spawns (night/era-scaled); contact damage + collapse; tap-attack w/ weapon power; loot; guard NPCs; ad-repel; 3D threats + alert. Build/test/lint green; app boots clean. |
 | 12 Save/load | ✅ done | Versioned full serialize/restore (RNG-cursor preserved, terrain regenerated); migrations seam; autosave + manual Save/Load + Continue. Round-trip tested; runtime-verified. |
 | 13 Zoom scale layers | ✅ done | viewScale (character/settlement/planet/orbit); follow-cam, biome globe, starfield orbit; scale switcher. Build/test/lint green; app boots clean. |
-| 14 Multiplayer architecture interfaces | ⬜ next | See ROADMAP.md |
-| 15–16 | ⬜ not started | See ROADMAP.md |
+| 14 Multiplayer architecture interfaces | ✅ done | NetCommand/NetMessage protocol, NetTransport (+Null/Loopback), host-authoritative Session (+OfflineSession), ARCHITECTURE docs. Interfaces+stubs+tests; offline-first, nothing connects. |
+| 15 Mobile UI polish + performance pass | ⬜ next | See ROADMAP.md |
+| 16 Android export/release docs | ⬜ not started | See ROADMAP.md |
 
 ## What is stubbed (and honestly NOT finished)
 - AdService: real AdMob impl deferred; **MockAdService** used in dev/web.
@@ -124,20 +130,19 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 - None yet. (Android build blocked until JDK 17 installed — not needed before Phase 16.)
 
 ## Next exact task
-Phase 14 — multiplayer architecture interfaces (offline-first, NOT implemented). Define the
-networking seam in the sim core/services so future friend-based MP is a drop-in: a command/intent
-protocol (the existing `Intent` is already the unit of change — formalize a `NetCommand` envelope
-with tick + player id), a snapshot/sync contract, a `NetTransport` interface (connect/send/
-on-message/disconnect) with a `LocalTransport` no-op/loopback default, a host-authoritative
-`Session` interface (the deterministic World is already the authority), and lobby/peer types for
-friend invites. Document the model in ARCHITECTURE.md. Keep everything offline-first: nothing
-network actually runs; just interfaces + a loopback stub + tests for the envelope/serialization.
+Phase 15 — mobile UI polish + performance pass. Performance: code-split the heavy three.js/r3f
+render layer (React.lazy + Suspense around WorldCanvas, and/or Vite `manualChunks`) to shrink the
+initial bundle below the warning; cap pixel ratio; memoize hot snapshot selectors; verify steady
+frame pacing. UI polish: hide gameplay HUD panels at planet/orbit scales; ensure 44px touch
+targets + safe-area insets everywhere; tidy portrait vs landscape; a lightweight boot/menu screen
+(New Game / Continue). Verify in the browser preview (and resize for portrait/landscape). Keep the
+sim core untouched.
 
 Known tunables to revisit: day length ~3 min real/day (TICKS_PER_HOUR=150). Balance first-pass;
 group-affinity threshold (8) makes organic grouping slow — assigning NPCs together speeds it. NPCs
 don't permanently die yet; eras 2–3 add little new content; governance is descriptive. Terrain is
-a single mesh (chunking/LOD revisit). Bundle code-splitting = Phase 15. NOTE: preview screenshot
-tool is intermittent — verify via console + tests when it fails.
+a single mesh (chunking/LOD revisit). NOTE: preview screenshot tool is intermittent — verify via
+console + tests when it fails.
 
 ## Current architecture assumptions
 - Sim core is deterministic and renderer-agnostic; UI never mutates world directly — it

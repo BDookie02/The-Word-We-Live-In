@@ -44,16 +44,14 @@ WORKING RULES (checkpoint protocol):
   push unless a remote is configured — ask the user for GitHub access if needed).
 
 CURRENT POSITION (update this each checkpoint):
-- Last checkpoint: C13 — Phase 13 complete & verified (build/test/lint green; 119 tests passing;
-  app boots clean — screenshot tool went intermittent again, so planet/orbit views weren't
-  captured; verify via console + tests when it fails).
-- Next exact task: Phase 14 (multiplayer architecture interfaces, offline-first, NOT implemented):
-  define the networking seam so future friend-based MP is a drop-in — a `NetCommand` envelope
-  (wrap the existing Intent with tick + playerId), a snapshot/sync contract, a `NetTransport`
-  interface (connect/send/onMessage/disconnect) with a `LocalTransport` loopback default, a
-  host-authoritative `Session`/lobby/peer typing (the deterministic World is the authority), and
-  ARCHITECTURE.md docs. Interfaces + loopback stub + envelope/serialization tests only; nothing
-  network actually runs. Keep it pure where possible; do not change gameplay behavior.
+- Last checkpoint: C14 — Phase 14 complete & verified (build/test/lint green; 128 tests passing;
+  app boots clean). MP interfaces only; nothing connects. Preview screenshot tool is intermittent.
+- Next exact task: Phase 15 (mobile UI polish + performance pass) — code-split the heavy three.js/
+  r3f render layer (React.lazy + Suspense around WorldCanvas and/or Vite manualChunks) to drop the
+  initial bundle under the 500 KB warning; cap pixel ratio; memoize hot snapshot selectors; hide
+  gameplay HUD panels at planet/orbit scales; ensure 44px touch targets + safe-area insets;
+  portrait/landscape tidy; add a lightweight boot/menu (New Game / Continue). Verify in the browser
+  preview incl. resize. Keep the sim core untouched; UI/render read snapshots, dispatch intents.
 
 GIT REMOTE STATUS: origin configured + main pushed ->
 https://github.com/BDookie02/The-Word-We-Live-In.git (Git Credential Manager handles auth).

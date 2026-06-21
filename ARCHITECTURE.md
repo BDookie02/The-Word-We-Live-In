@@ -108,6 +108,24 @@ tests live colocated as *.test.ts and run under Vitest.
 - All gated behind `AdService`; `MockAdService` lets us build/test the whole reward flow
   offline with zero SDK dependency.
 
+## Multiplayer architecture (Phase 14 — interfaces only, offline-first)
+The networking seam is defined but **nothing connects**; the game runs fully offline. The design
+leans entirely on the deterministic, intent-driven sim core:
+- **Protocol (`src/sim/net/protocol.ts`):** a `NetCommand` wraps an `Intent` with `{ tick, seq,
+  playerId }`; `NetMessage` is a union of `hello | bye | command | sync`; `encodeMessage` /
+  `decodeMessage` are versioned + JSON-safe. (`sync` carries a full `SaveBlob` to bootstrap a
+  joining peer.)
+- **Transport (`src/services/net/NetTransport.ts`):** `NetTransport` interface with `NullTransport`
+  (offline default) and `LoopbackTransport` (in-process, for hot-seat/tests). A real WebRTC/relay
+  transport for friend invites plugs in here later.
+- **Session (`src/services/net/Session.ts`):** host-authoritative `MultiplayerSession`;
+  `OfflineSession` is the default no-op single-player session (`getSession()`).
+- **Integration point (future):** the GameLoop would route the local player's intents through
+  `session.submitIntent(intent, tick)` instead of dispatching directly; the host orders all peers'
+  commands per tick and applies them to the authoritative World; deterministic re-simulation keeps
+  clients in lock-step (a joiner starts from a `sync` SaveBlob). Today the GameLoop dispatches
+  locally and the session is offline, so behavior is unchanged.
+
 ## Performance posture
 3D in a WebView on mid-range Android is the main risk. Mitigations: chunked/low-poly meshes,
 LOD per zoom layer, instancing for repeated props, capped draw calls, sim runs on fixed

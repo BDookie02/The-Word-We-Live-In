@@ -23,7 +23,7 @@ Phased build plan. Each phase is small enough to verify before moving on. Status
 | 11 | Enemies/threats + weapon/tool progression | Seeded threat spawns (night/era), contact damage + collapse, tap-attack w/ weapon power, loot, guard NPCs, ad-repel, 3D threats | ✅ |
 | 12 | Save/load | Versioned full serialize/restore (RNG-cursor preserved, terrain regenerated), migrations seam, localStorage adapter, autosave + manual Save/Load + Continue | ✅ |
 | 13 | Zoom scale layers | viewScale (character/settlement/planet/orbit): follow-cam, low-poly biome globe, starfield orbit, scale switcher | ✅ |
-| 14 | Multiplayer architecture interfaces | Net interfaces, command/snapshot protocol sketch — **offline-first, not implemented** | ⬜ |
+| 14 | Multiplayer architecture interfaces | NetCommand/NetMessage protocol, NetTransport (+Null/Loopback), host-authoritative Session (+Offline), docs — **offline-first, not implemented** | ✅ |
 | 15 | Mobile UI polish + performance pass | Responsive HUD, touch targets, perf budget, frame profiling | ⬜ |
 | 16 | Android export/release docs | Capacitor Android, AdMob prod config, signing, Play listing checklist | ⬜ |
 
