@@ -43,6 +43,8 @@ function NeedBar({ icon, label, value }: { icon: string; label: string; value: n
 export default function Hud() {
   const snapshot = useGameStore((s) => s.snapshot);
   const dispatch = useGameStore((s) => s.dispatch);
+  const saveGame = useGameStore((s) => s.saveGame);
+  const loadGame = useGameStore((s) => s.loadGame);
   const { watchForReward, adBusy } = useRewardedAd();
   const [craftOpen, setCraftOpen] = useState(false);
   const [tasksOpen, setTasksOpen] = useState(false);
@@ -163,6 +165,12 @@ export default function Hud() {
             onClick={() => setEraOpen((v) => !v)}
           >
             🏛️ Era
+          </button>
+          <button className="hud__btn" onClick={saveGame} title="Save now">
+            💾 Save
+          </button>
+          <button className="hud__btn" onClick={loadGame} title="Revert to last save">
+            ↺ Load
           </button>
           {threatCount > 0 ? (
             <button

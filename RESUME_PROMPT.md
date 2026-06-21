@@ -44,17 +44,14 @@ WORKING RULES (checkpoint protocol):
   push unless a remote is configured — ask the user for GitHub access if needed).
 
 CURRENT POSITION (update this each checkpoint):
-- Last checkpoint: C11 — Phase 11 complete & verified (build/test/lint green; 111 tests passing;
-  app boots clean). NOTE: the preview screenshot tool has been timing out since C5 (environment,
-  not the app) — verify via preview_console_logs + tests until it recovers.
-- Next exact task: Phase 12 (save/load) — build the real versioned save in the sim core:
-  serialize the full World (seed, clock tick, player, inventory, npcs incl. values, buildings,
-  relationships, era, stats, threats, objective-completion + messages) to a versioned JSON blob +
-  a deserialize/World.restore that rebuilds an identical world (terrain regenerated from seed, not
-  stored); add a version-keyed migrations seam; wire SaveService to persist/load (web localStorage
-  now, Capacitor Preferences later) with autosave interval + manual Save/Load + Continue on launch.
-  Round-trip unit-test (save → load → snapshot equal). Keep serialize/deserialize pure in src/sim;
-  UI/render read snapshots and dispatch intents only.
+- Last checkpoint: C12 — Phase 12 complete & verified (build/test/lint green; 116 tests passing;
+  runtime-verified — the preview screenshot tool recovered and the full game renders).
+- Next exact task: Phase 13 (zoom scale layers) — add a `viewScale` to UI/state (character ↔
+  settlement ↔ planet ↔ orbit/galaxy) with pinch/buttons to switch. Settlement scale = the
+  current r3f world camera. Planet scale = a stylized whole-planet view (low-poly globe or
+  zoomed-out biome map with a settlement marker). Orbit/galaxy scale = the planet as a body among
+  stars. Drive camera/scene swaps from `viewScale`; keep the sim core UNTOUCHED (render/UI only,
+  reading snapshots). Add smooth transitions where easy. UI/render read snapshots, dispatch intents.
 
 GIT REMOTE STATUS: origin configured + main pushed ->
 https://github.com/BDookie02/The-Word-We-Live-In.git (Git Credential Manager handles auth).

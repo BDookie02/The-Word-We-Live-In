@@ -16,12 +16,16 @@ interface GameStore {
   adBusy: boolean;
   /** Building kind pending placement (next ground tap sites it), or null. */
   placement: BuildingKind | null;
+  /** Force a save now / revert to the last save. Injected by the GameLoop owner (App). */
+  saveGame: () => void;
+  loadGame: () => void;
 
   setSnapshot: (snapshot: WorldSnapshot) => void;
   setTerrain: (terrain: TerrainData) => void;
   setDispatch: (dispatch: (intent: Intent) => void) => void;
   setAdBusy: (busy: boolean) => void;
   setPlacement: (placement: BuildingKind | null) => void;
+  setSaveHandlers: (save: () => void, load: () => void) => void;
 }
 
 export const useGameStore = create<GameStore>((set) => ({
@@ -32,10 +36,17 @@ export const useGameStore = create<GameStore>((set) => ({
   },
   adBusy: false,
   placement: null,
+  saveGame: () => {
+    /* replaced by App */
+  },
+  loadGame: () => {
+    /* replaced by App */
+  },
 
   setSnapshot: (snapshot) => set({ snapshot }),
   setTerrain: (terrain) => set({ terrain }),
   setDispatch: (dispatch) => set({ dispatch }),
   setAdBusy: (adBusy) => set({ adBusy }),
   setPlacement: (placement) => set({ placement }),
+  setSaveHandlers: (saveGame, loadGame) => set({ saveGame, loadGame }),
 }));

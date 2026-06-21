@@ -21,7 +21,7 @@ Phased build plan. Each phase is small enough to verify before moving on. Status
 | 9 | Civilization progression eras | Era chain + minEra-gated recipes/buildings, requirement-gated advanceEra + Era panel, era_transition ad hook, era-scaled farm output | ✅ |
 | 10 | Emergent social systems | Value axes, affinity-clustered groups + leaders, fictional culture/belief/law tenets + names, ally/rival relations, value drift, Society panel — *fictional/emergent* | ✅ |
 | 11 | Enemies/threats + weapon/tool progression | Seeded threat spawns (night/era), contact damage + collapse, tap-attack w/ weapon power, loot, guard NPCs, ad-repel, 3D threats | ✅ |
-| 12 | Save/load | Versioned save schema, storage adapter (web localStorage / Capacitor), migrations | ⬜ |
+| 12 | Save/load | Versioned full serialize/restore (RNG-cursor preserved, terrain regenerated), migrations seam, localStorage adapter, autosave + manual Save/Load + Continue | ✅ |
 | 13 | Zoom scale layers | Character ↔ settlement ↔ planet ↔ orbit/galaxy LOD + camera transitions | ⬜ |
 | 14 | Multiplayer architecture interfaces | Net interfaces, command/snapshot protocol sketch — **offline-first, not implemented** | ⬜ |
 | 15 | Mobile UI polish + performance pass | Responsive HUD, touch targets, perf budget, frame profiling | ⬜ |

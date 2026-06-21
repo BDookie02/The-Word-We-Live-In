@@ -19,6 +19,7 @@ import {
   type EraRequirement,
 } from '../progression/eras';
 import { createRng, type RNG } from '../core/rng';
+import { SAVE_VERSION, type SaveBlob } from '../persistence/saveSchema';
 import { SimClock, type CalendarTime } from '../core/SimClock';
 import {
   fullNeeds,
@@ -682,5 +683,64 @@ export class World {
       },
       threats: this.threats.map((t) => ({ ...t, pos: { ...t.pos } })),
     };
+  }
+
+  /**
+   * Full, versioned serialization of world state. Terrain is omitted (regenerated from the seed
+   * on restore); RNG cursor states are stored so post-load play stays deterministic.
+   */
+  serialize(): SaveBlob {
+    return structuredClone({
+      version: SAVE_VERSION,
+      seed: this.seed,
+      tick: this.clock.tick,
+      player: this.player,
+      inventory: this.inventory,
+      nodes: this.nodes,
+      npcs: this.npcs,
+      buildings: this.buildings,
+      threats: this.threats,
+      relationships: this.relationships,
+      era: this.era,
+      stats: this.stats,
+      society: this.society,
+      completed: this.completed,
+      messages: this.messages,
+      warnedHunger: this.warnedHunger,
+      warnedThirst: this.warnedThirst,
+      nextBuildingId: this.nextBuildingId,
+      nextThreatId: this.nextThreatId,
+      nextMsgId: this.nextMsgId,
+      npcRngState: this.npcRng.state(),
+      threatRngState: this.threatRng.state(),
+    });
+  }
+
+  /** Rebuild a World from a save blob. Terrain + shore points are regenerated from the seed. */
+  static restore(blob: SaveBlob): World {
+    const w = new World(blob.seed); // regenerates terrain/shorePoints; state below is overwritten
+    const data = structuredClone(blob);
+    w.clock.tick = data.tick;
+    w.player = data.player;
+    w.inventory = data.inventory;
+    w.nodes = data.nodes;
+    w.npcs = data.npcs;
+    w.buildings = data.buildings;
+    w.threats = data.threats;
+    w.relationships = data.relationships;
+    w.era = data.era;
+    w.stats = data.stats;
+    w.society = data.society;
+    w.completed = data.completed;
+    w.messages = data.messages;
+    w.warnedHunger = data.warnedHunger;
+    w.warnedThirst = data.warnedThirst;
+    w.nextBuildingId = data.nextBuildingId;
+    w.nextThreatId = data.nextThreatId;
+    w.nextMsgId = data.nextMsgId;
+    // createRng(state) resumes the mulberry32 stream exactly at the saved cursor.
+    w.npcRng = createRng(data.npcRngState);
+    w.threatRng = createRng(data.threatRngState);
+    return w;
   }
 }

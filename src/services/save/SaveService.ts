@@ -1,18 +1,12 @@
+import { migrateSave, type SaveBlob } from '../../sim';
+
 /**
- * Preliminary persistence. Phase 1 only stores enough to re-create a world (its seed),
- * so the app can offer "Continue". The full versioned WorldSnapshot serialization with
- * migrations lands in Phase 12 (see ROADMAP.md) — this is intentionally minimal, not the
- * final save format.
+ * Persistence boundary. Stores the full versioned World save (see sim/persistence/saveSchema).
+ * Uses web localStorage today; the storage adapter is swapped for Capacitor Preferences on
+ * native in a later phase. All (de)serialization lives in the sim core — this just moves bytes.
  */
 
-const SAVE_KEY = 'twwli.save.v1';
-const SAVE_VERSION = 1;
-
-interface SaveBlob {
-  version: number;
-  seed: number;
-  savedAt: number;
-}
+const SAVE_KEY = 'twwli.save.v2';
 
 /** Key/value storage that works on web today and is swapped for Capacitor Preferences later. */
 interface StorageAdapter {
@@ -32,17 +26,24 @@ const webStorage: StorageAdapter = {
 };
 
 export const SaveService = {
-  saveSeed(seed: number, storage: StorageAdapter = webStorage): void {
-    const blob: SaveBlob = { version: SAVE_VERSION, seed: seed >>> 0, savedAt: Date.now() };
-    storage.set(SAVE_KEY, JSON.stringify(blob));
+  hasSave(storage: StorageAdapter = webStorage): boolean {
+    return storage.get(SAVE_KEY) !== null;
   },
 
-  loadSeed(storage: StorageAdapter = webStorage): number | null {
+  saveWorld(blob: SaveBlob, storage: StorageAdapter = webStorage): void {
+    try {
+      storage.set(SAVE_KEY, JSON.stringify(blob));
+    } catch (err) {
+      console.warn('[save] failed to persist', err);
+    }
+  },
+
+  /** Load + migrate the save, or null if absent/corrupt/unmigratable. */
+  loadWorld(storage: StorageAdapter = webStorage): SaveBlob | null {
     const raw = storage.get(SAVE_KEY);
     if (!raw) return null;
     try {
-      const blob = JSON.parse(raw) as SaveBlob;
-      return typeof blob.seed === 'number' ? blob.seed >>> 0 : null;
+      return migrateSave(JSON.parse(raw));
     } catch {
       return null;
     }

@@ -2,9 +2,9 @@
 
 > Living status document. Updated at every checkpoint. Read this first when resuming.
 
-**Last updated:** 2026-06-18 (Checkpoint C11 — Phase 11 complete & verified)
-**Current phase:** Phase 11 done ✅ → next: Phase 12 (save/load)
-**Overall status:** 🟢 Healthy. No drift. Build/test/lint green; app boots clean (preview screenshot tool still timing out — verified via console + 111 tests).
+**Last updated:** 2026-06-18 (Checkpoint C12 — Phase 12 complete & verified)
+**Current phase:** Phase 12 done ✅ → next: Phase 13 (zoom scale layers: character/settlement/planet/orbit)
+**Overall status:** 🟢 Healthy. No drift. Build/test/lint green; runtime-verified in a browser preview (screenshot tool recovered — full game renders).
 
 ---
 
@@ -76,12 +76,17 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
   threat to attack with your best weapon (spear/axe boost power); kills drop loot. NPCs on the
   `guard` task auto-fight nearby threats. A threat alert + rewarded-ad "repel" (`reward_defense`)
   appear when threats are present. Threats render in 3D.
+- **Save/load:** full versioned serialization of the World (`World.serialize`/`World.restore`),
+  with RNG cursor states preserved so play continues deterministically; terrain regenerates from
+  the seed (not stored). Versioned schema + migrations seam. SaveService persists to localStorage
+  (Capacitor Preferences later). Autosave every 15s + on exit; manual 💾 Save / ↺ Load; Continue
+  on launch (auto-restores the last save). Round-trip + continuation-determinism unit-tested.
 - **Mobile camera/input:** touch-friendly camera rig (drag-pan + pinch-zoom via drei
   MapControls); tap a resource node to gather, tap ground to move.
 - HUD overlay (clock, needs, inventory, actions, crafting panel) adapts to portrait/landscape.
 - **Monetization** verified at runtime earlier: "Watch ad" → MockAdService → +10 wood;
   revive flow uses the `reward_revive` placement.
-- `npm run test` (111 passing), `npm run build` (tsc + vite; ~1.03 MB JS / 287 KB gz — three.js
+- `npm run test` (116 passing), `npm run build` (tsc + vite; ~1.03 MB JS / 288 KB gz — three.js
   is heavy, code-splitting deferred to Phase 15), `npm run lint` (clean) — all green.
 
 ## Built so far
@@ -99,8 +104,9 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 | 9 Civilization progression eras | ✅ done | Era chain + unlock gates (minEra recipes/buildings); advanceEra requirements + Era panel; era_transition ad hook; farm output scales with era. Build/test/lint green; app boots clean. |
 | 10 Emergent social systems | ✅ done | Value axes; affinity-clustered groups; leaders; fictional culture/belief/law tenets + names; ally/rival relations; value drift; Society panel. Build/test/lint green; app boots clean. |
 | 11 Enemies/threats + weapon progression | ✅ done | Seeded threat spawns (night/era-scaled); contact damage + collapse; tap-attack w/ weapon power; loot; guard NPCs; ad-repel; 3D threats + alert. Build/test/lint green; app boots clean. |
-| 12 Save/load | ⬜ next | See ROADMAP.md |
-| 13–16 | ⬜ not started | See ROADMAP.md |
+| 12 Save/load | ✅ done | Versioned full serialize/restore (RNG-cursor preserved, terrain regenerated); migrations seam; autosave + manual Save/Load + Continue. Round-trip tested; runtime-verified. |
+| 13 Zoom scale layers | ⬜ next | See ROADMAP.md |
+| 14–16 | ⬜ not started | See ROADMAP.md |
 
 ## What is stubbed (and honestly NOT finished)
 - AdService: real AdMob impl deferred; **MockAdService** used in dev/web.
@@ -112,21 +118,18 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 - None yet. (Android build blocked until JDK 17 installed — not needed before Phase 16.)
 
 ## Next exact task
-Phase 12 — save/load. Build the real versioned save in the sim core: serialize the full World
-state (seed, clock tick, player, inventory, npcs incl. values, buildings, relationships, era,
-stats, threats, objective-completion + messages) to a versioned JSON blob, plus a deserialize/
-`World.restore` that rebuilds an identical world (terrain is regenerated from the seed, not
-stored). Add a migrations seam keyed on version. Wire SaveService to persist/load it (web
-localStorage now, Capacitor Preferences later) with autosave on an interval + manual Save/Load in
-the UI; offer Continue on launch. Keep serialize/deserialize pure + round-trip unit-tested
-(save → load → snapshot equal).
+Phase 13 — zoom scale layers: character ↔ settlement ↔ planet ↔ orbit/galaxy. Add a `viewScale`
+to UI state and a pinch/buttons control to switch layers. At settlement scale, use the current
+3D world camera (current view). At planet scale, show a stylized whole-planet view (e.g. a
+low-poly globe or a zoomed-out map summarizing biomes + settlement marker). At orbit/galaxy
+scale, show the planet as a body among stars. Drive camera/scene swaps from `viewScale`; keep the
+sim core untouched (these are render/UI layers reading snapshots). Smooth transitions where easy.
 
 Known tunables to revisit: day length ~3 min real/day (TICKS_PER_HOUR=150). Balance first-pass;
 group-affinity threshold (8) means organic grouping is slow — assigning NPCs together speeds it.
 NPCs don't permanently die yet; eras 2–3 add little new content; governance is descriptive (no
-enforced law mechanics yet). Terrain is a single mesh (chunking/LOD = Phase 13). Bundle
-code-splitting = Phase 15. NOTE: preview **screenshot** tool timing out since C5 (environment) —
-verify via console + tests.
+enforced law mechanics yet). Terrain is a single mesh (chunking/LOD to revisit with planet scale).
+Bundle code-splitting = Phase 15. (Preview screenshot tool recovered at C12.)
 
 ## Current architecture assumptions
 - Sim core is deterministic and renderer-agnostic; UI never mutates world directly — it

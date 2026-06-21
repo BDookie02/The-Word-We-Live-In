@@ -17,6 +17,9 @@ export const TICKS_PER_DAY = TICKS_PER_HOUR * HOURS_PER_DAY;
 // (prevents the "spiral of death" after a stall / backgrounded tab).
 export const MAX_CATCHUP_STEPS = 5;
 
+// How often (real ms) the game autosaves to storage.
+export const AUTOSAVE_INTERVAL_MS = 15000;
+
 // Monetization cadence (enforced by gameplay, honored by AdService callers).
 export const ADS = {
   /** Minimum real seconds between interstitials. */

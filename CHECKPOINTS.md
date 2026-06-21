@@ -4,6 +4,38 @@ Append-only checkpoint log. Newest at top. Each entry = a verifiable save point.
 
 ---
 
+## C12 — Phase 12 complete & verified — 2026-06-18
+**Phase:** 12 (save/load) — ✅ done
+**What was built:**
+- `src/sim/persistence/saveSchema.ts`: `SaveBlobV2` (full state; terrain omitted — regenerated
+  from seed), `SAVE_VERSION=2`, `migrateSave` (version-keyed seam; older/corrupt → null).
+- `World.serialize()` / static `World.restore(blob)`: deep structuredClone in/out; restore
+  rebuilds terrain/shorePoints from seed and resumes the npc/threat RNG cursors via
+  `createRng(state)` (mulberry32 state == seed-equivalent) so continuation is deterministic.
+- `SaveService` rewritten: `saveWorld`/`loadWorld` (migrate) / `hasSave` / `clear` on a
+  localStorage adapter (Capacitor Preferences later). Removed the old seed-only API.
+- `GameLoop` now takes a `World` (+ `GameLoop.fromSeed`); added `serialize()`, `loadFrom(blob)`,
+  `snapshot()`. `App` restores a saved world on launch (Continue) or starts fresh, autosaves
+  every 15s (`AUTOSAVE_INTERVAL_MS`) + on unmount, and injects save/load handlers into the store.
+- UI: 💾 Save / ↺ Load buttons in the HUD.
+
+**Files changed:** +src/sim/persistence/{saveSchema.ts,save.test.ts}, ~src/sim/world/World.ts,
+~src/sim/index.ts, ~src/services/save/SaveService.ts, ~src/game/GameLoop.ts, ~src/state/store.ts,
+~src/App.tsx, ~src/config/gameConfig.ts, ~src/ui/Hud.tsx.
+**What works:** autosave + Continue-on-launch; manual save/revert; save→load yields an identical
+snapshot AND continues deterministically (RNG preserved); migrations seam in place.
+**What is stubbed (honest):** storage is localStorage only (Capacitor Preferences swap = native
+phase); no multiple save slots / cloud sync; "Load" reverts to the single latest save; AdMob real
+impl still pending.
+**What failed:** nothing.
+**Validation run:** `npm run test` → 116/116 pass (incl. round-trip + continuation determinism)
+· `npm run build` → tsc + vite OK (1.03 MB / 288 KB gz; chunk-size warning noted) · `npm run lint`
+→ clean · **runtime:** browser preview (screenshot tool recovered) shows the full game rendering —
+era/needs/assistant/threat-alert/3D world + the complete action bar incl. Save/Load; no console errors.
+**Next exact task:** Phase 13 — zoom scale layers (character/settlement/planet/orbit) driven by a
+`viewScale` UI state; render/camera swaps only, sim core untouched.
+**Git:** committed on `main`, pushed to origin.
+
 ## C11 — Phase 11 complete & verified — 2026-06-18
 **Phase:** 11 (enemies/threats + weapon/tool progression) — ✅ done
 **What was built:**

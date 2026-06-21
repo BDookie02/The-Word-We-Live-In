@@ -91,6 +91,7 @@ export {
   type ThreatKind,
 } from './threats/threats';
 export type { NpcSnapshot } from './world/World';
+export { SAVE_VERSION, migrateSave, type SaveBlob } from './persistence/saveSchema';
 export {
   RESOURCE_KINDS,
   emptyTally,

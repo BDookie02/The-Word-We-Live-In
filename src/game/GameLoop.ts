@@ -1,5 +1,5 @@
 import { MAX_CATCHUP_STEPS, TICK_MS } from '../config/gameConfig';
-import { World, type Intent, type TerrainData, type WorldSnapshot } from '../sim';
+import { World, type Intent, type SaveBlob, type TerrainData, type WorldSnapshot } from '../sim';
 
 /**
  * Real-time driver for the deterministic sim. This is the ONLY place wall-clock time enters
@@ -15,17 +15,37 @@ export class GameLoop {
   private running = false;
   private onSnapshot: (s: WorldSnapshot) => void = () => {};
 
-  constructor(seed: number) {
-    this.world = World.fromSeed(seed);
+  constructor(world: World) {
+    this.world = world;
+  }
+
+  static fromSeed(seed: number): GameLoop {
+    return new GameLoop(World.fromSeed(seed));
   }
 
   get seed(): number {
     return this.world.seed;
   }
 
-  /** Static terrain for the current world (generated once at construction). */
+  /** Static terrain for the current world (regenerated from the seed). */
   getTerrain(): TerrainData {
     return this.world.terrainData();
+  }
+
+  snapshot(): WorldSnapshot {
+    return this.world.snapshot();
+  }
+
+  /** Serialize current world state for persistence. */
+  serialize(): SaveBlob {
+    return this.world.serialize();
+  }
+
+  /** Replace the running world with one restored from a save blob (e.g. manual Load). */
+  loadFrom(blob: SaveBlob): void {
+    this.world = World.restore(blob);
+    this.accumulatorMs = 0;
+    this.onSnapshot(this.world.snapshot());
   }
 
   /** Submit a player/AI intent. Safe to call from UI/input at any time. */
