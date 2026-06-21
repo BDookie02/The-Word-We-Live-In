@@ -25,7 +25,7 @@ Phased build plan. Each phase is small enough to verify before moving on. Status
 | 13 | Zoom scale layers | viewScale (character/settlement/planet/orbit): follow-cam, low-poly biome globe, starfield orbit, scale switcher | ✅ |
 | 14 | Multiplayer architecture interfaces | NetCommand/NetMessage protocol, NetTransport (+Null/Loopback), host-authoritative Session (+Offline), docs — **offline-first, not implemented** | ✅ |
 | 15 | Mobile UI polish + performance pass | Code-split three.js + lazy render layer (~45 KB entry), boot menu (New Game/Continue), HUD hidden at planet/orbit, touch/safe-area | ✅ |
-| 16 | Android export/release docs | Capacitor Android, AdMob prod config, signing, Play listing checklist | ⬜ |
+| 16 | Android export/release docs | Capacitor + capacitor.config.ts + scripts + .env.example; ANDROID.md (cap add/sync, AdMob prod + consent, signing, Play checklist) | ✅ |
 
 ## Cross-cutting (woven through phases, not separate)
 - **Monetization (AdMob):** abstraction in Phase 1; rewarded-ad hooks added as gameplay

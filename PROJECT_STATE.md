@@ -2,9 +2,9 @@
 
 > Living status document. Updated at every checkpoint. Read this first when resuming.
 
-**Last updated:** 2026-06-21 (Checkpoint C15 — Phase 15 complete & verified)
-**Current phase:** Phase 15 done ✅ → next: Phase 16 (Android export/release documentation)
-**Overall status:** 🟢 Healthy. No drift. Build/test/lint green; app boots clean to the menu (verified via console + 128 tests). Bundle now code-split.
+**Last updated:** 2026-06-21 (Checkpoint C16 — Phase 16 complete; ALL 16 PHASES DONE ✅)
+**Current phase:** 🎉 All planned phases (0–16) complete. Next = ongoing depth/balance + native build on a configured machine.
+**Overall status:** 🟢 Healthy. No drift. Build/test/lint green (128 tests); app boots clean; Capacitor-configured + Android release documented.
 
 ---
 
@@ -96,6 +96,11 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
   no chunk-size warning. A **boot menu** (New Game / Continue) gates startup (ad init only after
   Start); the gameplay HUD is hidden at planet/orbit scales; 44px touch targets + safe-area insets;
   portrait/landscape handled.
+- **Android packaging (documented + configured):** Capacitor installed + `capacitor.config.ts`
+  (appId com.twwli.game, webDir dist) + `cap:sync`/`cap:android`/`android:run` scripts + `.env.example`.
+  Full release path in [ANDROID.md](ANDROID.md): build → `cap add android` → sync → Android Studio,
+  AdMob prod wiring + UMP consent, keystore/signing, Play Store listing checklist. The native
+  `android/` project + APK build require JDK 17 + Android Studio (not installed here).
 - **Mobile camera/input:** touch-friendly camera rig (drag-pan + pinch-zoom via drei
   MapControls); tap a resource node to gather, tap ground to move.
 - HUD overlay (clock, needs, inventory, actions, crafting panel) adapts to portrait/landscape.
@@ -124,7 +129,7 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 | 13 Zoom scale layers | ✅ done | viewScale (character/settlement/planet/orbit); follow-cam, biome globe, starfield orbit; scale switcher. Build/test/lint green; app boots clean. |
 | 14 Multiplayer architecture interfaces | ✅ done | NetCommand/NetMessage protocol, NetTransport (+Null/Loopback), host-authoritative Session (+OfflineSession), ARCHITECTURE docs. Interfaces+stubs+tests; offline-first, nothing connects. |
 | 15 Mobile UI polish + performance pass | ✅ done | Code-split three.js + lazy render layer (entry ~45 KB); boot menu (New Game/Continue); HUD hidden at planet/orbit; touch/safe-area polish. Build/test/lint green; boots clean. |
-| 16 Android export/release docs | ⬜ next | See ROADMAP.md |
+| 16 Android export/release docs | ✅ done | Capacitor + capacitor.config.ts + scripts + .env.example; ANDROID.md (build/cap/AdMob/signing/Play checklist). Build/test/lint green. |
 
 ## What is stubbed (and honestly NOT finished)
 - AdService: real AdMob impl deferred; **MockAdService** used in dev/web.
@@ -136,20 +141,21 @@ Android export is documented for Phase 16 (requires JDK 17 — NOT yet installed
 - None yet. (Android build blocked until JDK 17 installed — not needed before Phase 16.)
 
 ## Next exact task
-Phase 16 — Android export/release documentation (FINAL phase). Add Capacitor: `@capacitor/core` +
-`@capacitor/cli` (+ android platform), `capacitor.config.ts` (appId e.g. com.twwli.game, webDir
-`dist`), and document the full path in a new ANDROID.md: `npm run build` → `npx cap add android` →
-`npx cap sync` → open in Android Studio → run/build. Document the **AdMob production wiring**
-(install `@capacitor-community/admob`, fill `AdMobService` TODOs, real ad unit IDs via env,
-UMP/GDPR consent), signing/keystore + release build, and a Play Store listing checklist (privacy
-policy, data-safety form, content rating, icons/screenshots). NOTE: JDK 17 + Android Studio are
-NOT installed on this machine — document the steps; the actual native build runs on a configured
-machine. Keep it docs + config; no behavior change.
+All 16 roadmap phases are complete. There is no "next phase" — further work is **depth, balance,
+and the native build**, pickable in any order:
+1. Run the native Android build on a machine with JDK 17 + Android Studio (`npx cap add android`),
+   then wire real AdMob IDs + UMP consent and produce a signed AAB (see ANDROID.md).
+2. Content/balance depth: more era-gated recipes/buildings (eras 2–3 are thin); NPC death + birth/
+   population; governance that *enforces* laws (not just descriptive tenets); richer combat/weapon
+   tiers; quests beyond the starter objectives.
+3. Tech depth: real friend-based multiplayer (wire the Phase-14 Session/Transport to WebRTC/relay);
+   terrain chunking/LOD for larger worlds; animated zoom-scale transitions; deeper snapshot-selector
+   memoization for perf at high entity counts.
 
-Known tunables to revisit: day length ~3 min real/day (TICKS_PER_HOUR=150). Balance first-pass;
-group-affinity threshold (8) makes organic grouping slow. NPCs don't permanently die yet; eras 2–3
-add little new content; governance is descriptive. Terrain is a single mesh (chunking/LOD revisit).
-NOTE: preview screenshot tool is intermittent — verify via console + tests when it fails.
+Known tunables: day length ~3 min real/day (TICKS_PER_HOUR=150). Balance first-pass; group-affinity
+threshold (8) makes organic grouping slow (assigning NPCs together speeds it). NPCs weaken but don't
+permanently die. Terrain is a single mesh. NOTE: preview screenshot tool is intermittent — verify
+via console + tests when it fails.
 
 ## Current architecture assumptions
 - Sim core is deterministic and renderer-agnostic; UI never mutates world directly — it

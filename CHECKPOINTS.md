@@ -4,6 +4,38 @@ Append-only checkpoint log. Newest at top. Each entry = a verifiable save point.
 
 ---
 
+## C16 — Phase 16 complete — ALL 16 PHASES DONE 🎉 — 2026-06-21
+**Phase:** 16 (Android export/release documentation) — ✅ done. Config + docs; no behavior change.
+**What was built:**
+- Installed Capacitor dev deps: `@capacitor/core`, `@capacitor/cli`, `@capacitor/android` (v6).
+- `capacitor.config.ts` (appId `com.twwli.game`, appName "The World We Live In", webDir `dist`).
+- npm scripts: `cap:sync`, `cap:android`, `android:run`. `.env.example` for AdMob IDs + testing flag.
+- `ANDROID.md`: full release workflow — prerequisites (JDK 17/Android Studio), `cap add android` +
+  sync, run/iterate, **AdMob production wiring** (plugin install, AdMobService dynamic import, env
+  IDs, AndroidManifest meta-data + AD_ID permission, UMP consent), app id/versioning, keystore +
+  signing + `bundleRelease` AAB, and a Play Store listing checklist. iOS noted as future.
+- `.gitignore` hardened for Android secrets/build (`*.jks`, keystore.properties, local.properties,
+  android build dirs). README updated (status + Android quick path + ANDROID.md link).
+
+**Files changed:** +capacitor.config.ts, +ANDROID.md, +.env.example, ~package.json (+lock),
+~.gitignore, ~README.md.
+**What is stubbed (honest, owner/native-machine work):** the native `android/` project is NOT
+generated here (`npx cap add android` needs JDK 17 + Android Studio — absent on this machine); real
+AdMob IDs, UMP consent flow, keystore/signing, and Play listing assets are owner-provided at release.
+**What failed:** nothing.
+**Validation run:** `npm run test` → 128/128 pass · `npm run build` → tsc + vite OK (code-split, no
+chunk warning) · `npm run lint` → clean · **runtime:** app boots clean (no console errors).
+**Next exact task:** none (roadmap complete) — see PROJECT_STATE.md "Next exact task" for the
+depth/native-build backlog.
+**Git:** committed on `main`, pushed to origin.
+
+### 🏁 Project summary (C0 → C16)
+All 16 build-order phases delivered on the locked stack (TypeScript · React 18 · Three.js/r3f ·
+Zustand · Vite · Capacitor · AdMob abstraction), around a pure deterministic sim core: procedural
+planet, survival loop, inventory/crafting, AI-assistant objectives, NPCs + emergent society, eras,
+threats/combat, full save/load, zoom scales, multiplayer interfaces (offline-first), perf
+code-split, and Android release docs. 128 unit tests; build/lint green throughout.
+
 ## C15 — Phase 15 complete & verified — 2026-06-21
 **Phase:** 15 (mobile UI polish + performance pass) — ✅ done. Render/UI/build only; sim untouched.
 **What was built:**

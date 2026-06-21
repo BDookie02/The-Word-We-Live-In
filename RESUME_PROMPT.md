@@ -44,17 +44,15 @@ WORKING RULES (checkpoint protocol):
   push unless a remote is configured — ask the user for GitHub access if needed).
 
 CURRENT POSITION (update this each checkpoint):
-- Last checkpoint: C15 — Phase 15 complete & verified (build/test/lint green; 128 tests passing;
-  boots to menu, no console errors). Bundle code-split (entry ~45 KB; lazy three-vendor). Preview
-  screenshot tool intermittent — verify via console + tests when it fails.
-- Next exact task: Phase 16 (Android export/release docs — FINAL). Add Capacitor (@capacitor/core
-  + @capacitor/cli, android platform) + capacitor.config.ts (appId com.twwli.game, webDir 'dist').
-  Write ANDROID.md: build → `npx cap add android` → `npx cap sync` → Android Studio run/build;
-  AdMob production wiring (install @capacitor-community/admob, fill AdMobService TODOs, real ad
-  unit IDs via env, UMP/GDPR consent); signing/keystore + release build; Play Store listing
-  checklist (privacy policy, data-safety, content rating, icons/screenshots). JDK 17 + Android
-  Studio are NOT installed here — this is docs + config; the native build runs on a configured
-  machine. No gameplay behavior change.
+- Last checkpoint: C16 — Phase 16 complete. ALL 16 ROADMAP PHASES DONE. build/test/lint green
+  (128 tests); app boots clean; Capacitor-configured + Android release documented (ANDROID.md).
+- Next exact task: no remaining roadmap phase. Continue with the depth/native backlog in
+  PROJECT_STATE.md "Next exact task" — pick any: (1) run the native Android build + real AdMob +
+  signed AAB on a JDK17/Android-Studio machine; (2) content/balance depth (more era content, NPC
+  death/birth, enforced governance, weapon tiers, more quests); (3) tech depth (wire real
+  multiplayer onto the Phase-14 Session/Transport, terrain chunking/LOD, animated zoom transitions,
+  selector memoization). Keep the deterministic sim core pure + unit-tested; UI/render read
+  snapshots and dispatch intents only.
 
 GIT REMOTE STATUS: origin configured + main pushed ->
 https://github.com/BDookie02/The-Word-We-Live-In.git (Git Credential Manager handles auth).
